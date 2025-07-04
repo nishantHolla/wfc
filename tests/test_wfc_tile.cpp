@@ -1,20 +1,40 @@
 #include "wfc_tile.h"
 #include "wfc_directions.h"
+#include "wfc_sdl_utils.h"
 #include "wfc_test.h"
+#include "wfc_log.h"
 
 #include <cassert>
+#include <SDL2/SDL.h>
 
 using wfc::Directions;
 using wfc::Tile;
 
-int main(void) {
+void test() {
+  SDL_Window* window = SDL_CreateWindow("",
+                                        SDL_WINDOWPOS_CENTERED,
+                                        SDL_WINDOWPOS_CENTERED,
+                                        1, 1, SDL_WINDOW_HIDDEN);
+
+  if (!window) {
+    wfc::Log::error("SDL Window init faild");
+    exit(1);
+  }
+
+  SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+  if (!renderer) {
+    wfc::Log::error("SDL Renderer init faild");
+    exit(1);
+  }
+
   /// Initialize all tiles
 
-  Tile up("tiles/up.jpg");
-  Tile right("tiles/right.jpg");
-  Tile down("tiles/down.jpg");
-  Tile left("tiles/left.jpg");
-  Tile blank("tiles/blank.jpg");
+  Tile up("tiles/up.png", renderer);
+  Tile right("tiles/right.png", renderer);
+  Tile down("tiles/down.png", renderer);
+  Tile left("tiles/left.png", renderer);
+  Tile blank("tiles/blank.png", renderer);
 
   /// Add rules for tile up
 
@@ -86,5 +106,21 @@ int main(void) {
   );
 
   test_results();
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+}
+
+int main(void) {
+  try {
+    wfc::init_sdl();
+  }
+  catch (std::runtime_error& e) {
+    wfc::Log::error("SDL Init faild");
+    exit(1);
+  }
+
+  test();
+
+  wfc::free_sdl();
   return 0;
 }

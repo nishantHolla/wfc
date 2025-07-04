@@ -1,12 +1,14 @@
 #include "wfc_canvas.h"
 #include "wfc_directions.h"
 #include "wfc_test.h"
+#include "wfc_sdl_utils.h"
+#include "wfc_log.h"
 
 using wfc::DirectionType;
 using wfc::Directions;
 using wfc::Canvas;
 
-int main(void) {
+void test() {
   Canvas canvas(480, 480, 20, 20);
 
   canvas.set_base_path("tiles");
@@ -14,11 +16,11 @@ int main(void) {
 
   /// Initialize all tiles
 
-  canvas.add_tile("up", "up.jpg");
-  canvas.add_tile("right", "right.jpg");
-  canvas.add_tile("down", "down.jpg");
-  canvas.add_tile("left", "left.jpg");
-  canvas.add_tile("blank", "blank.jpg");
+  canvas.add_tile("up", "up.png");
+  canvas.add_tile("right", "right.png");
+  canvas.add_tile("down", "down.png");
+  canvas.add_tile("left", "left.png");
+  canvas.add_tile("blank", "blank.png");
 
   /// Add rules for tile up
 
@@ -58,7 +60,7 @@ int main(void) {
   /// Tests
 
   try {
-    canvas.add_tile("blank", "blank.jpg");
+    canvas.add_tile("blank", "blank.png");
     test_case(false);
   }
   catch(...) {
@@ -82,5 +84,19 @@ int main(void) {
   }
 
   test_results();
+}
+
+int main(void) {
+  try {
+    wfc::init_sdl();
+  }
+  catch (std::runtime_error& e) {
+    wfc::Log::error("SDL Init faild");
+    exit(1);
+  }
+
+  test();
+
+  wfc::free_sdl();
   return 0;
 }
