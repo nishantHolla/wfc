@@ -54,7 +54,7 @@ public:
 
 private:
   const std::string path__;
-  std::unordered_map<wfc::Directions, std::unordered_set<Tile*>> rules;
+  std::unordered_map<wfc::Directions, std::unordered_set<Tile*>> rules__;
 };
 
 }
