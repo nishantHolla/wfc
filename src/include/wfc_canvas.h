@@ -11,6 +11,8 @@
 #include <filesystem>
 #include <initializer_list>
 
+#include <SDL2/SDL.h>
+
 namespace wfc {
 
 class Canvas {
@@ -23,6 +25,10 @@ public:
    *       size_t p_height: Height of the canvas
    *       size_t p_rows  : Number of rows in the canvas
    *       size_t columns : Number of columns in the canvas
+   *
+   * Throws:
+   *       If SDL Window creation fails
+   *       If SDL Renderer creation fails
    */
   Canvas(size_t p_width, size_t p_height, size_t p_rows, size_t p_columns);
 
@@ -53,6 +59,9 @@ public:
    * Params:
    *       String p_name: Name of the tile
    *       String p_path: Tile path relative to the base_path__
+   *
+   * Throws:
+   *       If tile with name p_name already exists in tiles__
    */
   void add_tile(const std::string& p_name, const std::string& p_path);
 
@@ -63,6 +72,9 @@ public:
    *       String     p_for: Name of the tile for which to add the rule
    *       Directions p_dir: Direction to add the rule in
    *       String     p_to : Name of the tile in the rule
+   *
+   * Throws:
+   *       If tile with name p_for or p_to does not exist in tiles__
    */
   void add_rule(const std::string& p_for, wfc::Directions p_dir, const std::string& p_to);
 
@@ -73,6 +85,9 @@ public:
    *       String     p_for: Name of the tile for which to add the rule
    *       Directions p_dir: Direction to add the rule in
    *       String     p_to : Initializer list of names of the tile in the rule
+   *
+   * Throws:
+   *       If tile with name p_for or p_to does not exist in tiles__
    */
   void add_rule(const std::string& p_for, wfc::Directions p_dir,
                 const std::initializer_list<const std::string> p_to);
@@ -87,6 +102,8 @@ private:
   std::filesystem::path base_path__;
   wfc::DirectionType direction_type__;
   std::unordered_map<std::string, wfc::Tile*> tiles__;
+  SDL_Window* window__;
+  SDL_Renderer* renderer__;
 };
 
 }

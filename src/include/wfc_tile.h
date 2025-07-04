@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <initializer_list>
 #include <filesystem>
+#include <SDL2/SDL.h>
 
 namespace wfc {
 
@@ -18,9 +19,14 @@ public:
    * Construct the tile object with the path to the tile image
    *
    * Params:
-   *       String p_path: Path to the image file of the tile
+   *       String        p_path    : Path to the image file of the tile
+   *       SDL_Renderer* p_renderer: Renderer to use to load the texture for the tile
+   *
+   * Throws:
+   *       If Img_Load fails to load image at p_path
+   *       If conversion from SDL Surface to SDL Texture fails
    */
-  Tile(const std::string& p_path);
+  Tile(const std::string& p_path, SDL_Renderer* p_renderer);
 
   /*
    * Add a rule of placement for this tile in the given direction
@@ -56,6 +62,7 @@ public:
 private:
   const std::filesystem::path path__;
   std::unordered_map<wfc::Directions, std::unordered_set<Tile*>> rules__;
+  SDL_Texture* texture__;
 };
 
 }
