@@ -44,6 +44,13 @@ int main(void) {
   left.add_rule(Directions::SOUTH, {&up, &left, &right});
   left.add_rule(Directions::WEST, {&right, &down, &up});
 
+  /// Add rules fo tile blank
+
+  blank.add_rule(Directions::NORTH, {&blank, &up});
+  blank.add_rule(Directions::EAST, {&blank, &right});
+  blank.add_rule(Directions::SOUTH, {&blank, &down});
+  blank.add_rule(Directions::WEST, {&blank, &left});
+
   /// Tests
 
   test_case(
