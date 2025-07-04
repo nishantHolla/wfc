@@ -2,7 +2,8 @@ CC=g++
 CFLAGS=-Wall -Wextra -Isrc/include --std=c++17
 DEBUG_FLAGS=-O0 -ggdb -fsanitize=address
 RELEASE_FLAGS=-O3
-SRC= src/wfc_tile.cpp
+SRC= src/wfc_tile.cpp \
+		 src/wfc_canvas.cpp
 MAIN=src/main.cpp
 OUT=-o out/wfc
 TEST_OUT=-o out/wfc-test

@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <initializer_list>
+#include <filesystem>
 
 namespace wfc {
 
@@ -53,7 +54,7 @@ public:
   bool check_rule(wfc::Directions p_direction, Tile* p_tile);
 
 private:
-  const std::string path__;
+  const std::filesystem::path path__;
   std::unordered_map<wfc::Directions, std::unordered_set<Tile*>> rules__;
 };
 
