@@ -34,3 +34,7 @@ void wfc::Tile::add_rule(wfc::Directions p_direction, const std::initializer_lis
 bool wfc::Tile::check_rule(wfc::Directions p_direction, Tile* p_tile) {
   return rules__[p_direction].count(p_tile);
 }
+
+SDL_Texture* wfc::Tile::get_texture() const {
+  return texture__;
+}

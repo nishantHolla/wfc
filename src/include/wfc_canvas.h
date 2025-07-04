@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <filesystem>
 #include <initializer_list>
+#include <vector>
 
 #include <SDL2/SDL.h>
 
@@ -92,6 +93,11 @@ public:
   void add_rule(const std::string& p_for, wfc::Directions p_dir,
                 const std::initializer_list<const std::string> p_to);
 
+  /*
+   * Render the current state of buffer__ using SDL window
+   */
+  void render();
+
 private:
   const size_t width__;
   const size_t height__;
@@ -104,6 +110,10 @@ private:
   std::unordered_map<std::string, wfc::Tile*> tiles__;
   SDL_Window* window__;
   SDL_Renderer* renderer__;
+  std::vector<wfc::Tile*> buffer__;
+  SDL_Texture* null_texture__;
+
+  void create_null_texture__();
 };
 
 }

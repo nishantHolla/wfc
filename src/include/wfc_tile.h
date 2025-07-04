@@ -59,6 +59,11 @@ public:
    */
   bool check_rule(wfc::Directions p_direction, Tile* p_tile);
 
+  /*
+   * Get the texture of the tile
+   */
+  SDL_Texture* get_texture() const;
+
 private:
   const std::filesystem::path path__;
   std::unordered_map<wfc::Directions, std::unordered_set<Tile*>> rules__;
