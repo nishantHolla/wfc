@@ -4,7 +4,8 @@ DEBUG_FLAGS=-O0 -ggdb -fsanitize=address
 RELEASE_FLAGS=-O3
 SRC= src/wfc_tile.cpp \
 		 src/wfc_canvas.cpp \
-		 src/wfc_sdl_utils.cpp
+		 src/wfc_sdl_utils.cpp \
+		 src/wfc_parser.cpp
 MAIN=src/main.cpp
 OUT=-o out/wfc
 TEST_OUT=-o out/wfc-test

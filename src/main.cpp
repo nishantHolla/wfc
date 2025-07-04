@@ -1,32 +1,33 @@
 #include "wfc_canvas.h"
+#include "wfc_log.h"
 #include "wfc_sdl_utils.h"
+#include "wfc_parser.h"
 
-void app() {
-  wfc::Canvas canvas(640, 640, 4, 4);
-  canvas.set_base_path("tiles");
-  canvas.set_direction_type(wfc::DirectionType::QUAD_DIRECTIONS);
+void app(const wfc::Parser& parser) {
+  size_t width, height, rows, cols;
+  parser.parse_canvas(width, height, rows, cols);
+  wfc::Canvas canvas(width, height, rows, cols);
 
-  canvas.add_tile("up", "up.png");
-  canvas.add_tile("right", "right.png");
-  canvas.add_tile("down", "down.png");
-  canvas.add_tile("left", "left.png");
-  canvas.add_tile("blank", "blank.png");
-
-  SDL_Event e;
   bool quit = false;
+  SDL_Event e;
+
   while (!quit) {
     while (SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT) {
-        quit = true;
-      }
+      if (e.type == SDL_QUIT) quit = true;
     }
     canvas.render();
   }
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    wfc::Log::error("Usage: ./wfc </path/to/config.json>");
+    exit(1);
+  }
+
   wfc::init_sdl();
-  app();
+  wfc::Parser parser(argv[1]);
+  app(parser);
   wfc::free_sdl();
   return 0;
 }
