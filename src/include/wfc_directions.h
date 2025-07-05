@@ -21,8 +21,8 @@ enum class DirectionType {
   OCT_DIRECTIONS
 };
 
-std::ostream& operator<<(std::ostream& out, const wfc::Directions& dir);
-
 }
+
+std::ostream& operator<<(std::ostream& out, const wfc::Directions& dir);
 
 #endif // !WFC_DIRECTIONS_H_
