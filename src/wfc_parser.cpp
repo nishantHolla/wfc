@@ -54,7 +54,16 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   auto& section = config_json__["tiles"];
   for (auto& [key, item]: section.items()) {
     const std::string path = parse_string__(item, "path", "/tiles/" + key);
-    // TODO: Parse Tile info
+    wfc::TileInfo tile(key, path);
+
+    if (!item.contains("rules")) {
+      char msg[100];
+      sprintf(msg, "Path \"/tiles/%s/rules\" is missing in config file %s", key.c_str(), config_path__.c_str());
+      throw std::runtime_error(msg);
+    }
+
+    parse_tile_rules__(tile, item["rules"]);
+    p_tiles.emplace_back(tile);
   }
 }
 
@@ -113,4 +122,27 @@ bool wfc::Parser::parse_bool__(const json& section, const std::string& p_key,
   }
 
   return section[p_key];
+}
+
+void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const {
+  using wfc::Directions;
+  std::unordered_map<wfc::Directions, std::string> dir_map = {
+    {Directions::NORTH, "north"},
+    {Directions::NORTH_EAST, "north_east"},
+    {Directions::EAST, "east"},
+    {Directions::SOUTH_EAST, "south_east"},
+    {Directions::SOUTH, "south"},
+    {Directions::SOUTH_WEST, "south_west"},
+    {Directions::WEST, "west"},
+    {Directions::NORTH_WEST, "north_west"},
+  };
+
+  for (const auto& [key, value] : dir_map) {
+    if (section.contains(value)) {
+      tile.rules[key] = section[value].get<std::vector<std::string>>();
+    }
+    else {
+      tile.rules[key] = {};
+    }
+  }
 }

@@ -18,6 +18,14 @@ struct TileInfo {
   std::string name;
   std::string path;
   std::unordered_map<wfc::Directions, std::vector<std::string>> rules;
+  TileInfo(const std::string& p_name, const std::string& p_path) :
+    name(p_name),
+    path(p_path) {
+  }
+
+  void add_rule(wfc::Directions p_dir, const std::string& p_tile_name) {
+    rules[p_dir].emplace_back(p_tile_name);
+  }
 };
 
 class Parser {
@@ -99,6 +107,7 @@ private:
 
   /*
    * Get a boolean from the given section in the config
+   *
    * Params:
    *       json   section: Json section to search in
    *       String p_key  : Key to search in the section
@@ -112,6 +121,14 @@ private:
    */
   bool parse_bool__(const json& section, const std::string& p_key, const std::string& p_path) const;
 
+  /*
+   * Parse the rules section of tiles and fill the rules property of the given tile
+   *
+   * Params:
+   *       TileInfo tile   : Reference to the tile for which to fill the rules for
+   *       json     section: Json section that contains the rules
+   */
+  void parse_tile_rules__(TileInfo& tile, const json& section) const;
 };
 
 }
