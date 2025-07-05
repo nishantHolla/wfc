@@ -19,14 +19,31 @@ public:
    * Construct the tile object with the path to the tile image
    *
    * Params:
-   *       String        p_path    : Path to the image file of the tile
+   *       String p_path    : Path to the image file of the tile
+   */
+  Tile(const std::string& p_path);
+
+  /*
+   * Construct the tile object with the path to the tile image and use the given renderer
+   * to load the image
+   *
+   * Params:
+   *       String        p_path     : Path to the image file of the tile
+   *       SDL_Renderer* p_renderer : Renderer to use to load the image
+   */
+  Tile(const std::string& p_path, SDL_Renderer* renderer);
+
+  /*
+   * Load the image from its path
+   *
+   * Params:
    *       SDL_Renderer* p_renderer: Renderer to use to load the texture for the tile
    *
    * Throws:
    *       If Img_Load fails to load image at p_path
    *       If conversion from SDL Surface to SDL Texture fails
    */
-  Tile(const std::string& p_path, SDL_Renderer* p_renderer);
+  void load(SDL_Renderer* p_renderer);
 
   /*
    * Add a rule of placement for this tile in the given direction
