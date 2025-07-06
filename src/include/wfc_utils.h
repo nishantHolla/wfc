@@ -8,11 +8,6 @@
 namespace wfc {
 
 /*
- * Get random integer between the given range [min, max)
- */
-int get_rand_int(int min, int max);
-
-/*
  * Find intersection of two sets
  */
 template<typename S>

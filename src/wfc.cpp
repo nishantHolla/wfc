@@ -2,8 +2,6 @@
 #include "wfc_sdl_utils.h"
 #include "wfc_parser.h"
 
-#include <random>
-
 wfc::Canvas* wfc::init(const std::string& p_config_path) {
   wfc::init_sdl();
   wfc::Parser parser(p_config_path);

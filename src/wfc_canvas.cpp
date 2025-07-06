@@ -1,5 +1,6 @@
 #include "wfc_canvas.h"
 #include "wfc_utils.h"
+#include "wfc_random.h"
 
 #include <stdexcept>
 #include <filesystem>
@@ -128,7 +129,7 @@ bool wfc::Canvas::collapse_next() {
     return false;
   }
 
-  size_t tile_selection_idx = wfc::get_rand_int(0, spot->possible_tiles.size());
+  size_t tile_selection_idx = wfc::Random::int_from_range(0, spot->possible_tiles.size());
   wfc::Tile* tile = *wfc::select_from(spot->possible_tiles, tile_selection_idx);
 
   spot->tile = tile;
@@ -208,7 +209,7 @@ size_t wfc::Canvas::get_lowest_entropy_spot_idx__() {
     }
   }
 
-  return min_entropy_spots[wfc::get_rand_int(0, min_entropy_spots.size())];
+  return min_entropy_spots[wfc::Random::int_from_range(0, min_entropy_spots.size())];
 }
 
 void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
