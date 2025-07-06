@@ -3,24 +3,27 @@
 #include "wfc_directions.h"
 #include "wfc_test.h"
 #include "wfc_log.h"
+#include "wfc.h"
 
 #include <string>
+#include <filesystem>
 
 void test(const std::string& p_config_path) {
-  wfc::Parser parser(p_config_path);
+  std::filesystem::path config_path(p_config_path);
+  wfc::check_config_file(p_config_path);
+  std::filesystem::current_path(config_path.parent_path());
+  wfc::Parser parser(config_path.filename());
 
   /// Parse canvas
-  size_t width, height, rows, columns;
-  parser.parse_canvas(width, height, rows, columns);
-  printf("width: %zu, height: %zu, rows: %zu, columns: %zu\n", width, height, rows, columns);
-  test_case(true);
-
-  /// Parse settings
-  wfc::DirectionType dir_type;
-  std::string base_path;
-  parser.parse_settings(dir_type, base_path);
-  std::string dir_type_str = dir_type == wfc::DirectionType::QUAD_DIRECTIONS ? "quad" : "oct";
-  printf("dir_type: %s, base_path: %s\n", dir_type_str.c_str(), base_path.c_str());
+  wfc::CanvasInfo canvas_info;
+  parser.parse_canvas(canvas_info);
+  std::string dir_type_str = canvas_info.direction_type == wfc::DirectionType::QUAD_DIRECTIONS ? "quad" : "oct";
+  printf("width: %zu, height: %zu, rows: %zu, columns: %zu, dir_type: %s\n",
+         canvas_info.width,
+         canvas_info.height,
+         canvas_info.rows,
+         canvas_info.columns,
+         dir_type_str.c_str());
   test_case(true);
 
   /// Parse tiles
