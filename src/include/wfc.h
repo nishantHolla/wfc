@@ -8,6 +8,18 @@
 namespace wfc {
 
 /*
+ * Check the health of the config file and performs necessary actions to begin processing the file
+ *
+ * Params:
+ *       Path p_config_path: Path to the config file
+ *
+ *
+ * Throws:
+ *       If config file does not exists or not a json file
+ */
+void check_config_file(const std::filesystem::path& p_config_path);
+
+/*
  * Creates a wfc::Canvas object by parsing the config at the given path
  * Also initializes SDL
  *

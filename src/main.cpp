@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <string>
+#include <filesystem>
 
 const uint32_t TARGET_FPS = 60;
 const uint32_t FRAME_DELAY = 1000 / TARGET_FPS;
@@ -36,14 +37,17 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  bool running = true;
+  wfc::check_config_file(argv[optind]);
+  std::filesystem::path config_path = std::filesystem::path(argv[optind]).filename();
+
   if (SEED > 0) {
     wfc::Random::seed(SEED);
   }
-  wfc::Canvas* canvas = wfc::init(argv[optind]);
 
+  wfc::Canvas* canvas = wfc::init(config_path);
   Uint32 last_collapse_time = SDL_GetTicks();
 
+  bool running = true;
   while (running) {
     Uint32 frame_start = SDL_GetTicks();
 

@@ -19,7 +19,9 @@ ARGS=
 NAME=
 
 pre:
-	mkdir -p out
+	rm -r ./out
+	mkdir -p ./out
+	cp -r ./examples ./out/
 
 develop: pre
 	$(CC) $(CFLAGS) $(DEVELOP_FLAGS) $(OUT) $(SRC) $(MAIN) $(LIB)

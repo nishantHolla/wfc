@@ -2,6 +2,24 @@
 #include "wfc_sdl_utils.h"
 #include "wfc_parser.h"
 
+void wfc::check_config_file(const std::filesystem::path& p_config_path) {
+  if (!std::filesystem::exists(p_config_path)) {
+    char msg[100];
+    sprintf(msg, "Could not open config file at path %s", p_config_path.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  if (!(std::filesystem::is_regular_file(p_config_path) &&
+           p_config_path.has_extension() &&
+           p_config_path.extension() == ".json")) {
+    char msg[100];
+    sprintf(msg, "Config file at %s is not a json file", p_config_path.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  std::filesystem::current_path(p_config_path.parent_path());
+}
+
 wfc::Canvas* wfc::init(const std::string& p_config_path) {
   wfc::init_sdl();
   wfc::Parser parser(p_config_path);
