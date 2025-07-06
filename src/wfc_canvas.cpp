@@ -1,8 +1,11 @@
 #include "wfc_canvas.h"
+#include "wfc_utils.h"
 
 #include <stdexcept>
 #include <filesystem>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -34,7 +37,7 @@ wfc::Canvas::Canvas(size_t p_width, size_t p_height, size_t p_rows, size_t p_col
   }
 
   create_null_texture__();
-  buffer__.resize(rows__ * columns__, nullptr);
+  buffer__.resize(rows__ * columns__);
 }
 
 wfc::Canvas::~Canvas() {
@@ -100,6 +103,41 @@ void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir,
   }
 }
 
+void wfc::Canvas::reset() {
+  std::unordered_set<Tile*> possible_tiles;
+  for (const auto& item : tiles__) {
+    possible_tiles.insert(item.second);
+  }
+
+  for (size_t i = 0, e = buffer__.size(); i < e; ++i) {
+    buffer__[i].tile = nullptr;
+    buffer__[i].possible_tiles = possible_tiles;
+  }
+
+  collapsed_count__ = 0;
+}
+
+bool wfc::Canvas::collapse_next() {
+  if (collapsed_count__ == rows__ * columns__) {
+    return true;
+  }
+
+  size_t spot_idx = get_lowest_entropy_spot_idx__();
+  wfc::Spot* spot = &buffer__[spot_idx];
+  if (spot->possible_tiles.size() == 0) {
+    return false;
+  }
+
+  size_t tile_selection_idx = wfc::get_rand_int(0, spot->possible_tiles.size());
+  wfc::Tile* tile = *wfc::select_from(spot->possible_tiles, tile_selection_idx);
+
+  spot->tile = tile;
+  spot->possible_tiles.clear();
+  reduce_entropy_arround__(spot_idx);
+  ++collapsed_count__;
+  return true;
+}
+
 void wfc::Canvas::render() {
   SDL_RenderClear(renderer__);
 
@@ -113,7 +151,7 @@ void wfc::Canvas::render() {
         static_cast<int>(tile_height__)
       };
 
-      wfc::Tile* tile = buffer__[idx];
+      wfc::Tile* tile = buffer__[idx].tile;
       SDL_Texture* texture = tile ? tile->get_texture() : null_texture__;
       SDL_RenderCopy(renderer__, texture, nullptr, &pos_rect);
     }
@@ -151,4 +189,92 @@ void wfc::Canvas::create_null_texture__() {
   SDL_RenderFillRect(renderer__, &innerRect);
 
   SDL_SetRenderTarget(renderer__, previous_target);
+}
+
+size_t wfc::Canvas::get_lowest_entropy_spot_idx__() {
+  size_t min_entropy = tiles__.size();
+
+  for (const auto& spot : buffer__) {
+    if (spot.tile != nullptr) {
+      continue;
+    }
+    min_entropy = std::min(min_entropy, spot.possible_tiles.size());
+  }
+
+  std::vector<size_t> min_entropy_spots;
+  for (size_t i = 0, e = buffer__.size(); i < e; ++i) {
+    if (buffer__[i].possible_tiles.size() == min_entropy) {
+      min_entropy_spots.push_back(i);
+    }
+  }
+
+  return min_entropy_spots[wfc::get_rand_int(0, min_entropy_spots.size())];
+}
+
+void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
+  wfc::Spot* current_spot = &buffer__[p_spot_idx];
+
+  if (current_spot->tile == nullptr) {
+    return;
+  }
+
+  size_t row_number = p_spot_idx / columns__;
+  size_t col_number = p_spot_idx % columns__;
+
+  auto reduce_for = [](wfc::Spot* spot, wfc::Spot* current, wfc::Directions dir){
+    std::unordered_set<wfc::Tile*> rules = current->tile->get_rules(dir);
+    if (rules.size() == 0) {
+      return;
+    }
+    std::unordered_set<wfc::Tile*>& current_possibilities = spot->possible_tiles;
+    spot->possible_tiles = wfc::set_intersection(current_possibilities, rules);
+  };
+
+  if (row_number != 0) { /// Top spot exists
+    wfc::Spot* top_spot = &buffer__[p_spot_idx - columns__];
+    reduce_for(top_spot, current_spot, wfc::Directions::NORTH);
+  }
+
+  if (row_number != rows__ - 1) { /// Bottom spot exists
+    wfc::Spot* bottom_spot = &buffer__[p_spot_idx + columns__];
+    reduce_for(bottom_spot, current_spot, wfc::Directions::SOUTH);
+  }
+
+  if (col_number != 0) { /// Left spot exists
+    wfc::Spot* left_spot = &buffer__[p_spot_idx - 1];
+    reduce_for(left_spot, current_spot, wfc::Directions::WEST);
+  }
+
+  if (col_number != columns__ - 1) { /// Right spot exists
+    wfc::Spot* right_spot = &buffer__[p_spot_idx + 1];
+    reduce_for(right_spot, current_spot, wfc::Directions::EAST);
+  }
+
+  if (direction_type__ != wfc::DirectionType::OCT_DIRECTIONS) {
+    return;
+  }
+
+  if (row_number != 0 && col_number != 0) { /// Top Left spot exists
+    wfc::Spot* top_left_spot = &buffer__[p_spot_idx - columns__ - 1];
+    reduce_for(top_left_spot, current_spot, wfc::Directions::NORTH_WEST);
+  }
+
+  if (row_number != 0 && col_number != columns__ - 1) { /// Top Right spot exists
+    wfc::Spot* top_right_spot = &buffer__[p_spot_idx - columns__ + 1];
+    reduce_for(top_right_spot, current_spot, wfc::Directions::NORTH_EAST);
+  }
+
+  if (row_number != rows__ - 1 && col_number != 0) { /// Bottom Left spot exists
+    wfc::Spot* bottom_left_spot = &buffer__[p_spot_idx + columns__ - 1];
+    reduce_for(bottom_left_spot, current_spot, wfc::Directions::SOUTH_WEST);
+  }
+
+  if (row_number != rows__ - 1 && col_number != columns__ - 1) { /// Bottom Right spot exists
+    wfc::Spot* bottom_right_spot = &buffer__[p_spot_idx + columns__ + 1];
+    reduce_for(bottom_right_spot, current_spot, wfc::Directions::SOUTH_EAST);
+  }
+}
+
+void wfc::Canvas::test(size_t idx) {
+  std::cout << buffer__[idx].possible_tiles.size();
 }

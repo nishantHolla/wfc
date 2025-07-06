@@ -11,10 +11,18 @@
 #include <filesystem>
 #include <initializer_list>
 #include <vector>
+#include <unordered_set>
 
 #include <SDL2/SDL.h>
 
 namespace wfc {
+
+struct Spot {
+  wfc::Tile* tile;
+  std::unordered_set<wfc::Tile*> possible_tiles;
+  Spot() : tile(nullptr), possible_tiles{} {
+  }
+};
 
 class Canvas {
 public:
@@ -94,9 +102,24 @@ public:
                 const std::initializer_list<const std::string> p_to);
 
   /*
+   * Reset the canvas
+   */
+  void reset();
+
+  /*
+   * Collapse the next tile in the canvas
+   *
+   * Returns:
+   *        true if tile was collapsed successfully, else false
+   */
+  bool collapse_next();
+
+  /*
    * Render the current state of buffer__ using SDL window
    */
   void render();
+
+  void test(size_t idx);
 
 private:
   const size_t width__;
@@ -110,10 +133,32 @@ private:
   std::unordered_map<std::string, wfc::Tile*> tiles__;
   SDL_Window* window__;
   SDL_Renderer* renderer__;
-  std::vector<wfc::Tile*> buffer__;
+  std::vector<wfc::Spot> buffer__;
   SDL_Texture* null_texture__;
+  size_t collapsed_count__;
 
+  /*
+   * Create a black tile texture with white border and store it in null_texture__ to represent
+   * uncollapsed tile
+   */
   void create_null_texture__();
+
+  /*
+   * Get the index of spot with lowest entropy. Selects a random spot if more than one spot has
+   * the same lowest entropy
+   *
+   * Returns:
+   *        Index of the selected spot in buffer__
+   */
+  size_t get_lowest_entropy_spot_idx__();
+
+  /*
+   * Reduces entropy arround the given spot index using the rules
+   *
+   * Params:
+   *       size_t p_spot_idx: Index of the spot in buffer__ to look around
+   */
+  void reduce_entropy_arround__(size_t p_spot_idx);
 };
 
 }

@@ -23,10 +23,10 @@ wfc::Canvas* init(const std::string& p_config_path);
  * Poll SDL events
  *
  * Params:
- *       bool p_running: Reference to the bool that controls the main loop
+ *       bool        p_running: Reference to the bool that controls the main loop
+ *       wfc::Canvas p_canvas : Current canvas
  */
-void poll_events(bool& p_running);
-
+void poll_events(bool& p_running, wfc::Canvas* p_canvas);
 
 /*
  * Destroys the given canvas objec

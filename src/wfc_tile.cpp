@@ -41,6 +41,10 @@ bool wfc::Tile::check_rule(wfc::Directions p_direction, Tile* p_tile) {
   return rules__[p_direction].count(p_tile);
 }
 
+std::unordered_set<wfc::Tile*> wfc::Tile::get_rules(wfc::Directions p_dir) {
+  return rules__[p_dir];
+}
+
 SDL_Texture* wfc::Tile::get_texture() const {
   return texture__;
 }

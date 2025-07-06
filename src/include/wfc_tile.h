@@ -65,6 +65,17 @@ public:
   void add_rule(wfc::Directions p_direction, const std::initializer_list<Tile*>& p_list);
 
   /*
+   * Get the set of possible tiles from the rules__ for the given direction
+   *
+   * Params:
+   *       Directions p_dir: Direction of the rule to get
+   *
+   * Returns:
+   *        Unordered set of pointers to possible tiles that can be placed in the given direction
+   */
+  std::unordered_set<Tile*> get_rules(wfc::Directions p_dir);
+
+  /*
    * Check if the given tile can be placed in the given direction
    *
    * Params:

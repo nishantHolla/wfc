@@ -2,6 +2,8 @@
 #include "wfc_sdl_utils.h"
 #include "wfc_parser.h"
 
+#include <random>
+
 wfc::Canvas* wfc::init(const std::string& p_config_path) {
   wfc::init_sdl();
   wfc::Parser parser(p_config_path);
@@ -31,13 +33,21 @@ wfc::Canvas* wfc::init(const std::string& p_config_path) {
     }
   }
 
+  canvas->reset();
   return canvas;
 }
 
-void wfc::poll_events(bool& p_running) {
+void wfc::poll_events(bool& p_running, wfc::Canvas* canvas) {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
-    if (e.type == SDL_QUIT) p_running = false;
+    if (e.type == SDL_QUIT) {
+      p_running = false;
+    }
+    else if (e.type == SDL_KEYDOWN) {
+      if (e.key.keysym.sym == SDLK_r) {
+        canvas->reset();
+      }
+    }
   }
 }
 
