@@ -76,8 +76,8 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   }
   else if (section.is_array()) {
     for (auto& v : section) {
-      json sub_section = open_sub_section__(v);
-      parse_tile_section(sub_section, p_tiles);
+      json sub_config = open_sub_config__(v);
+      parse_tile_section(sub_config, p_tiles);
     }
   }
   else {
@@ -167,7 +167,7 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
   }
 }
 
-json wfc::Parser::open_sub_section__(const std::string& p_path) {
+json wfc::Parser::open_sub_config__(const std::string& p_path) {
   check_config_file(p_path);
 
   std::ifstream config_stream(p_path);

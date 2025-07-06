@@ -136,7 +136,7 @@ private:
    * Params:
    *       String p_path: Path to the config file
    */
-  json open_sub_section__(const std::string& p_path);
+  json open_sub_config__(const std::string& p_path);
 };
 
 }

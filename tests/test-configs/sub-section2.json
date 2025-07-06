@@ -1,0 +1,31 @@
+{
+    "UP": {
+      "path": "up.png",
+      "rules": {
+        "north": ["DOWN", "LEFT", "RIGHT"],
+        "east": ["LEFT", "DOWN", "UP"],
+        "south": ["BLANK", "DOWN"],
+        "west": ["RIGHT", "DOWN", "UP"]
+      }
+    },
+
+    "DOWN": {
+      "path": "down.png",
+      "rules": {
+        "north": ["BLANK", "UP"],
+        "east": ["LEFT", "DOWN", "UP"],
+        "south": ["UP", "LEFT", "RIGHT"],
+        "west": ["RIGHT", "DOWN", "UP"]
+      }
+    },
+
+    "BLANK": {
+      "path": "blank.png",
+      "rules": {
+        "north": ["BLANK", "UP"],
+        "east": ["BLANK", "RIGHT"],
+        "south": ["BLANK", "DOWN"],
+        "west": ["BLANK", "LEFT"]
+      }
+    }
+}

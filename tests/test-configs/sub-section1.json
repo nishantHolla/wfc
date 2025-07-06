@@ -1,0 +1,21 @@
+{
+  "LEFT": {
+    "path": "left.png",
+    "rules": {
+      "north": ["RIGHT", "LEFT", "DOWN"],
+      "east": ["RIGHT", "BLANK"],
+      "south": ["RIGHT", "LEFT", "UP"],
+      "west": ["RIGHT", "DOWN", "UP"]
+    }
+  },
+
+  "RIGHT": {
+    "path": "right.png",
+    "rules": {
+      "north": ["RIGHT", "LEFT", "DOWN"],
+      "east": ["LEFT", "DOWN", "UP"],
+      "south": ["RIGHT", "LEFT", "UP"],
+      "west": ["LEFT", "BLANK"]
+    }
+  }
+}
