@@ -47,14 +47,6 @@ public:
   ~Canvas();
 
   /*
-   * Set the base path for loading of images
-   *
-   * Params:
-   *       String p_base_path: Path to set
-   */
-  void set_base_path(const std::string& p_base_path);
-
-  /*
    * Set direction type
    *
    * Params:
@@ -67,7 +59,7 @@ public:
    *
    * Params:
    *       String p_name: Name of the tile
-   *       String p_path: Tile path relative to the base_path__
+   *       String p_path: Path to the tile image
    *
    * Throws:
    *       If tile with name p_name already exists in tiles__
@@ -128,7 +120,6 @@ private:
   const size_t columns__;
   const size_t tile_width__;
   const size_t tile_height__;
-  std::filesystem::path base_path__;
   wfc::DirectionType direction_type__;
   std::unordered_map<std::string, wfc::Tile*> tiles__;
   SDL_Window* window__;

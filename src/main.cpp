@@ -38,13 +38,16 @@ int main(int argc, char* argv[]) {
   }
 
   wfc::check_config_file(argv[optind]);
-  std::filesystem::path config_path = std::filesystem::path(argv[optind]).filename();
+  std::filesystem::path config_path(argv[optind]);
+  std::cout << config_path.parent_path() << "\n";
+  std::filesystem::current_path(config_path.parent_path());
+  std::filesystem::path config_file = config_path.filename();
 
   if (SEED > 0) {
     wfc::Random::seed(SEED);
   }
 
-  wfc::Canvas* canvas = wfc::init(config_path);
+  wfc::Canvas* canvas = wfc::init(config_file);
   Uint32 last_collapse_time = SDL_GetTicks();
 
   bool running = true;

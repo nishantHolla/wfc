@@ -20,7 +20,7 @@ wfc::Parser::Parser(const std::string& p_config_path) :
   config_stream.close();
 }
 
-void wfc::Parser::parse_canvas(size_t& p_width, size_t& p_height, size_t& p_rows, size_t& p_cols) const {
+void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
   if (!config_json__.contains("canvas")) {
     char msg[100];
     sprintf(msg, "Path \"/canvas\" is missing in config file %s", config_path__.c_str());
@@ -28,23 +28,24 @@ void wfc::Parser::parse_canvas(size_t& p_width, size_t& p_height, size_t& p_rows
   }
 
   auto& section = config_json__["canvas"];
-  p_width = parse_positive_int__(section, "width", "/canvas");
-  p_height = parse_positive_int__(section, "height", "/canvas");
-  p_rows = parse_positive_int__(section, "rows", "/canvas");
-  p_cols = parse_positive_int__(section, "columns", "/canvas");
-}
+  p_canvas_info.width = parse_positive_int__(section, "width", "/canvas");
+  p_canvas_info.height = parse_positive_int__(section, "height", "/canvas");
+  p_canvas_info.rows = parse_positive_int__(section, "rows", "/canvas");
+  p_canvas_info.columns = parse_positive_int__(section, "columns", "/canvas");
 
-void wfc::Parser::parse_settings(wfc::DirectionType& p_direction_type, std::string& p_base_path) {
-  if (!config_json__.contains("settings")) {
+  std::string direction_type = parse_string__(section, "directions", "/canvas");
+  if (direction_type == "quad") {
+    p_canvas_info.direction_type = wfc::DirectionType::QUAD_DIRECTIONS;
+  }
+  else if (direction_type == "oct") {
+    p_canvas_info.direction_type = wfc::DirectionType::OCT_DIRECTIONS;
+  }
+  else {
     char msg[100];
-    sprintf(msg, "Path \"/settings\" is missing in config file %s", config_path__.c_str());
+    sprintf(msg, "Path \"/canvas/directions\" must have the value \"quad\" or \"oct\" in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
 
-  auto& section = config_json__["settings"];
-  bool is_quad = parse_bool__(section, "quad_directions", "/settings");
-  p_direction_type = is_quad ? wfc::DirectionType::QUAD_DIRECTIONS : wfc::DirectionType::OCT_DIRECTIONS;
-  p_base_path = parse_string__(section, "base_path", "/settings");
 }
 
 void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {

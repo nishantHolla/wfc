@@ -4,8 +4,8 @@
 
 void wfc::check_config_file(const std::filesystem::path& p_config_path) {
   if (!std::filesystem::exists(p_config_path)) {
-    char msg[100];
-    sprintf(msg, "Could not open config file at path %s", p_config_path.c_str());
+    char msg[500];
+    sprintf(msg, "Could not open config file at path %s (current directory: %s)", p_config_path.c_str(), std::filesystem::current_path().c_str());
     throw std::runtime_error(msg);
   }
 
@@ -16,23 +16,21 @@ void wfc::check_config_file(const std::filesystem::path& p_config_path) {
     sprintf(msg, "Config file at %s is not a json file", p_config_path.c_str());
     throw std::runtime_error(msg);
   }
-
-  std::filesystem::current_path(p_config_path.parent_path());
 }
 
 wfc::Canvas* wfc::init(const std::string& p_config_path) {
   wfc::init_sdl();
   wfc::Parser parser(p_config_path);
 
-  size_t width, height, rows, cols;
-  parser.parse_canvas(width, height, rows, cols);
-  wfc::Canvas* canvas = new wfc::Canvas(width, height, rows, cols);
-
-  wfc::DirectionType direction_type;
-  std::string base_path;
-  parser.parse_settings(direction_type, base_path);
-  canvas->set_direction_type(direction_type);
-  canvas->set_base_path(base_path);
+  wfc::CanvasInfo canvas_info;
+  parser.parse_canvas(canvas_info);
+  wfc::Canvas* canvas = new wfc::Canvas(
+    canvas_info.width,
+    canvas_info.height,
+    canvas_info.rows,
+    canvas_info.columns
+  );
+  canvas->set_direction_type(canvas_info.direction_type);
 
   std::vector<wfc::TileInfo> tiles;
   parser.parse_tiles(tiles);

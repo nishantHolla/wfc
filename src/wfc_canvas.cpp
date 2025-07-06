@@ -17,7 +17,6 @@ wfc::Canvas::Canvas(size_t p_width, size_t p_height, size_t p_rows, size_t p_col
   columns__(p_columns),
   tile_width__(width__ / rows__),
   tile_height__(height__ / columns__),
-  base_path__(""),
   direction_type__(DirectionType::QUAD_DIRECTIONS) {
 
   window__ = SDL_CreateWindow("WFC",
@@ -51,10 +50,6 @@ wfc::Canvas::~Canvas() {
   SDL_DestroyWindow(window__);
 }
 
-void wfc::Canvas::set_base_path(const std::string& p_base_path) {
-  base_path__ = p_base_path;
-}
-
 void wfc::Canvas::set_direction_type(const wfc::DirectionType p_dir_type) {
   direction_type__ = p_dir_type;
 }
@@ -66,7 +61,7 @@ void wfc::Canvas::add_tile(const std::string& p_name, const std::string& p_path)
     throw std::runtime_error(msg);
   }
 
-  fs::path abs_path = fs::absolute(base_path__ / p_path);
+  fs::path abs_path = fs::absolute(p_path);
   tiles__[p_name] = new wfc::Tile(abs_path, renderer__);
 }
 

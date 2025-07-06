@@ -13,6 +13,13 @@
 namespace wfc {
 using json = nlohmann::json;
 
+struct CanvasInfo {
+  size_t width;
+  size_t height;
+  size_t rows;
+  size_t columns;
+  wfc::DirectionType direction_type;
+};
 
 struct TileInfo {
   std::string name;
@@ -45,21 +52,9 @@ public:
    * Parse "canvas" section of the config file and store values in the given references
    *
    * Params:
-   *      size_t p_width : Store width of the canvas
-   *      size_t p_height: Store height of the canvas
-   *      size_t p_rows  : Store number of rows in the canvas
-   *      size_t p_colums: Store number of columns in the canvas
+   *      CanvasInfo p_canvas_info: Reference to CanvasInfo struct to store parsed data
    */
-  void parse_canvas(size_t& p_width, size_t& p_height, size_t& p_rows, size_t& p_cols) const;
-
-  /*
-   * Parse "settings" section of the config file and store values in the given references
-   *
-   * Params:
-   *       wfc::DirectionType p_direction_type: Store the direction type
-   *       String             p_base_path     : Store the base path
-   */
-  void parse_settings(wfc::DirectionType& p_direction_type, std::string& p_base_path);
+  void parse_canvas(wfc::CanvasInfo& p_canvas_info) const;
 
   /*
    * Parse "tile" section of the config file and store vlaues in the given reference to vector
