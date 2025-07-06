@@ -1,7 +1,10 @@
 #include "wfc_parser.h"
 #include "wfc_canvas.h"
+#include "wfc.h"
 
 #include <fstream>
+
+using json = nlohmann::json;
 
 wfc::Parser::Parser(const std::string& p_config_path) :
   config_path__(p_config_path) {
@@ -51,19 +54,36 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
     throw std::runtime_error(msg);
   }
 
-  auto& section = config_json__["tiles"];
-  for (auto& [key, item]: section.items()) {
-    const std::string path = parse_string__(item, "path", "/tiles/" + key);
-    wfc::TileInfo tile(key, path);
+  auto parse_tile_section = [this](const json& section, std::vector<TileInfo>& p_tiles){
+    for (auto& [key, item]: section.items()) {
+      const std::string path = parse_string__(item, "path", "/tiles/" + key);
+      wfc::TileInfo tile(key, path);
 
-    if (!item.contains("rules")) {
-      char msg[100];
-      sprintf(msg, "Path \"/tiles/%s/rules\" is missing in config file %s", key.c_str(), config_path__.c_str());
-      throw std::runtime_error(msg);
+      if (!item.contains("rules")) {
+        char msg[100];
+        sprintf(msg, "Path \"/tiles/%s/rules\" is missing in config file %s", key.c_str(), config_path__.c_str());
+        throw std::runtime_error(msg);
+      }
+
+      parse_tile_rules__(tile, item["rules"]);
+      p_tiles.emplace_back(tile);
     }
+  };
 
-    parse_tile_rules__(tile, item["rules"]);
-    p_tiles.emplace_back(tile);
+  auto& section = config_json__["tiles"];
+  if (section.is_object()) {
+    parse_tile_section(section, p_tiles);
+  }
+  else if (section.is_array()) {
+    for (auto& v : section) {
+      json sub_section = open_sub_section__(v);
+      parse_tile_section(sub_section, p_tiles);
+    }
+  }
+  else {
+    char msg[100];
+    sprintf(msg, "Path \"/tiles\" is expected to be an object or array in config file %s", config_path__.c_str());
+    throw std::runtime_error(msg);
   }
 }
 
@@ -145,4 +165,20 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
       tile.rules[key] = {};
     }
   }
+}
+
+json wfc::Parser::open_sub_section__(const std::string& p_path) {
+  check_config_file(p_path);
+
+  std::ifstream config_stream(p_path);
+  if (!config_stream) {
+    char msg[100];
+    sprintf(msg, "Failed to open sub config file at %s", p_path.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  json config_json = json::parse(config_stream);
+  config_stream.close();
+
+  return config_json;
 }

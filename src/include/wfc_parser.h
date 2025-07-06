@@ -129,6 +129,14 @@ private:
    *       json     section: Json section that contains the rules
    */
   void parse_tile_rules__(TileInfo& tile, const json& section) const;
+
+  /*
+   * Open the json file at given path and read it
+   *
+   * Params:
+   *       String p_path: Path to the config file
+   */
+  json open_sub_section__(const std::string& p_path);
 };
 
 }
