@@ -3,6 +3,7 @@
 #include "wfc.h"
 
 #include <fstream>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -11,7 +12,7 @@ wfc::Parser::Parser(const std::string& p_config_path) :
 
   std::ifstream config_stream(config_path__);
   if (!config_stream) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Failed to open config file at %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -22,7 +23,7 @@ wfc::Parser::Parser(const std::string& p_config_path) :
 
 void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
   if (!config_json__.contains("canvas")) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Path \"/canvas\" is missing in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -41,7 +42,7 @@ void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
     p_canvas_info.direction_type = wfc::DirectionType::OCT_DIRECTIONS;
   }
   else {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Path \"/canvas/directions\" must have the value \"quad\" or \"oct\" in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -50,7 +51,7 @@ void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
 
 void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   if (!config_json__.contains("tiles")) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Path \"/tiles\" is missing in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -58,10 +59,10 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   auto parse_tile_section = [this](const json& section, std::vector<TileInfo>& p_tiles){
     for (auto& [key, item]: section.items()) {
       const std::string path = parse_string__(item, "path", "/tiles/" + key);
-      wfc::TileInfo tile(key, path);
+      wfc::TileInfo tile(key, std::filesystem::absolute(path));
 
       if (!item.contains("rules")) {
-        char msg[100];
+        char msg[500];
         sprintf(msg, "Path \"/tiles/%s/rules\" is missing in config file %s", key.c_str(), config_path__.c_str());
         throw std::runtime_error(msg);
       }
@@ -77,12 +78,16 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   }
   else if (section.is_array()) {
     for (auto& v : section) {
-      json sub_config = open_sub_config__(v);
+      std::filesystem::path saved_path = std::filesystem::current_path();
+      std::filesystem::path sub_config_path(v);
+      std::filesystem::current_path(sub_config_path.parent_path());
+      json sub_config = open_sub_config__(sub_config_path.filename());
       parse_tile_section(sub_config, p_tiles);
+      std::filesystem::current_path(saved_path);
     }
   }
   else {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Path \"/tiles\" is expected to be an object or array in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -92,14 +97,14 @@ size_t wfc::Parser::parse_positive_int__(const json& section, const std::string&
                                        const std::string& p_path) const {
 
   if (!section.contains(p_key)) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" is missing in config file %s", p_path.c_str(), p_key.c_str(),
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
 
   if (section[p_key].type() != json::value_t::number_unsigned) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" was expected to be a positive integer", p_path.c_str(), p_key.c_str());
     throw std::runtime_error(msg);
   }
@@ -111,14 +116,14 @@ std::string wfc::Parser::parse_string__(const json& section, const std::string& 
                                         const std::string& p_path) const {
 
   if (!section.contains(p_key)) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" is missing in config file %s", p_path.c_str(), p_key.c_str(),
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
 
   if (section[p_key].type() != json::value_t::string) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" was expected to be a string", p_path.c_str(), p_key.c_str());
     throw std::runtime_error(msg);
   }
@@ -130,14 +135,14 @@ bool wfc::Parser::parse_bool__(const json& section, const std::string& p_key,
                                         const std::string& p_path) const {
 
   if (!section.contains(p_key)) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" is missing in config file %s", p_path.c_str(), p_key.c_str(),
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
 
   if (section[p_key].type() != json::value_t::boolean) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "path \"%s/%s\" was expected to be a boolean", p_path.c_str(), p_key.c_str());
     throw std::runtime_error(msg);
   }
@@ -173,7 +178,7 @@ json wfc::Parser::open_sub_config__(const std::string& p_path) {
 
   std::ifstream config_stream(p_path);
   if (!config_stream) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Failed to open sub config file at %s", p_path.c_str());
     throw std::runtime_error(msg);
   }

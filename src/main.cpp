@@ -39,7 +39,6 @@ int main(int argc, char* argv[]) {
 
   wfc::check_config_file(argv[optind]);
   std::filesystem::path config_path(argv[optind]);
-  std::cout << config_path.parent_path() << "\n";
   std::filesystem::current_path(config_path.parent_path());
   std::filesystem::path config_file = config_path.filename();
 

@@ -12,7 +12,7 @@ wfc::Tile::Tile(const std::string& p_path, SDL_Renderer* p_renderer): wfc::Tile:
 void wfc::Tile::load(SDL_Renderer* p_renderer) {
   SDL_Surface* surface = IMG_Load(path__.c_str());
   if (!surface) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Failed to load texture at %s\n", path__.c_str());
     throw std::runtime_error(msg);
   }
@@ -21,7 +21,7 @@ void wfc::Tile::load(SDL_Renderer* p_renderer) {
   SDL_FreeSurface(surface);
 
   if (!texture__) {
-    char msg[100];
+    char msg[500];
     sprintf(msg, "Failed to convert surface to texture for %s\n", path__.c_str());
     throw std::runtime_error(msg);
   }
