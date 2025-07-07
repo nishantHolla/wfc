@@ -7,6 +7,15 @@
 
 #include <string>
 #include <filesystem>
+#include <ostream>
+
+std::ostream& operator<<(std::ostream& out, const std::unordered_set<std::string>& set) {
+  for (auto& item : set) {
+    out << item << " ";
+  }
+  out << "\n";
+  return out;
+}
 
 void test(const std::string& p_config_path) {
   std::filesystem::path config_path(p_config_path);
@@ -41,6 +50,25 @@ void test(const std::string& p_config_path) {
       }
       std::cout << "}\n";
     }
+  }
+  test_case(true);
+
+  /// Parse constraints
+  wfc::ConstraintInfo constraints;
+  parser.parse_constraints(constraints);
+  std::cout << "top right: " << constraints.top_right;
+  std::cout << "bottom right: " << constraints.bottom_right;
+  std::cout << "bottom left: " << constraints.bottom_left;
+  std::cout << "top left: " << constraints.top_left;
+  std::cout << "top: " << constraints.top;
+  std::cout << "right: " << constraints.right;
+  std::cout << "bottom: " << constraints.bottom;
+  std::cout << "left: " << constraints.left;
+  std::cout << "edges: " << constraints.edges;
+  std::cout << "corners: " << constraints.corners;
+  std::cout << "fixed: \n";
+  for (auto& item : constraints.fixed) {
+    std::cout << item.row << " " << item.column << " " << item.tiles;
   }
   test_case(true);
 
