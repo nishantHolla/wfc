@@ -21,7 +21,7 @@ NAME=
 pre:
 	rm -r ./out
 	mkdir -p ./out
-	cp -r ./examples ./out/
+	cd out && ln -s ../examples . && cd ..
 
 develop: pre
 	$(CC) $(CFLAGS) $(DEVELOP_FLAGS) $(OUT) $(SRC) $(MAIN) $(LIB)
