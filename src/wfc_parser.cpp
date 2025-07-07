@@ -64,7 +64,7 @@ void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
 
 }
 
-void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
+void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
 
   /// Check if tiles section is defined
 
@@ -127,6 +127,69 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   /// Resolve rules of tiles that were defined using inversion
 
   resolve_tile_inversion__(p_tiles);
+}
+
+void wfc::Parser::parse_constraints(wfc::ConstraintInfo& p_cons_info) const {
+  if (!config_json__.contains("constraints")) {
+    return;
+  }
+
+  auto parse_contraint = [this](const json& section, const std::string& name) {
+    if (!section.contains(name)) {
+      return std::unordered_set<std::string>();
+    }
+
+    if (!section[name].is_array()) {
+      char msg[500];
+      sprintf(msg, "Path \"/constraints/%s\" is expected to be an array in config file %s", name.c_str(), config_path__.c_str());
+      throw std::runtime_error(msg);
+    }
+
+    std::vector<std::string> vec = section[name].get<std::vector<std::string>>();
+    return std::unordered_set<std::string>(vec.begin(), vec.end());
+  };
+
+  json section = config_json__["constraints"];
+  p_cons_info.top_right = parse_contraint(section, "top_right");
+  p_cons_info.bottom_right = parse_contraint(section, "bottom_right");
+  p_cons_info.bottom_left = parse_contraint(section, "bottom_left");
+  p_cons_info.top_left = parse_contraint(section, "top_left");
+  p_cons_info.top = parse_contraint(section, "top");
+  p_cons_info.right = parse_contraint(section, "right");
+  p_cons_info.bottom = parse_contraint(section, "bottom");
+  p_cons_info.left = parse_contraint(section, "left");
+  p_cons_info.corners = parse_contraint(section, "corners");
+  p_cons_info.edges = parse_contraint(section, "edges");
+
+  if (!section.contains("fixed")) {
+    return;
+  }
+
+  if (!section["fixed"].is_array()) {
+    char msg[500];
+    sprintf(msg, "Path \"/constraints/fixed\" is expected to be an array in config file %s", config_path__.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  for (auto& item : section["fixed"]) {
+    if (!item.is_object()) {
+      char msg[500];
+      sprintf(msg, "Path \"/constraints/fixed\" is expected to be an array of objects in config file %s", config_path__.c_str());
+      throw std::runtime_error(msg);
+    }
+
+    ConstraintInfo::Fixed f;
+    f.row = parse_positive_int__(item, "row", "/constraints/fixed");
+    f.column = parse_positive_int__(item, "column", "/constraints/fixed");
+    if (!item.contains("tiles") || !item["tiles"].is_array()) {
+      char msg[500];
+      sprintf(msg, "Path \"/constraints/fixed/*/tiles\" is expected to be an array in config file %s", config_path__.c_str());
+      throw std::runtime_error(msg);
+    }
+    std::vector<std::string> vec = item["tiles"].get<std::vector<std::string>>();
+    f.tiles = std::unordered_set<std::string>(vec.begin(), vec.end());
+    p_cons_info.fixed.emplace_back(f);
+  }
 }
 
 size_t wfc::Parser::parse_positive_int__(const json& section, const std::string& p_key,
@@ -235,7 +298,7 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
   }
 }
 
-void wfc::Parser::resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) {
+void wfc::Parser::resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) const {
 
   /// Collect names of all tiles
 
@@ -256,7 +319,7 @@ void wfc::Parser::resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) {
   }
 }
 
-json wfc::Parser::open_sub_config__(const std::string& p_path) {
+json wfc::Parser::open_sub_config__(const std::string& p_path) const {
   /// Check the sub config file
 
   check_config_file(p_path);

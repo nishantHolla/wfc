@@ -36,6 +36,27 @@ struct TileInfo {
   }
 };
 
+struct ConstraintInfo {
+  struct Fixed {
+    int row; int column;
+    std::unordered_set<std::string> tiles;
+  };
+
+  std::unordered_set<std::string> top_right;
+  std::unordered_set<std::string> bottom_right;
+  std::unordered_set<std::string> bottom_left;
+  std::unordered_set<std::string> top_left;
+  std::unordered_set<std::string> top;
+  std::unordered_set<std::string> right;
+  std::unordered_set<std::string> bottom;
+  std::unordered_set<std::string> left;
+
+  std::unordered_set<std::string> corners;
+  std::unordered_set<std::string> edges;
+
+  std::vector<Fixed> fixed;
+};
+
 class Parser {
 public:
   /*
@@ -63,7 +84,15 @@ public:
    * Params:
    *       Vector<TileInfo> p_tiles: Store the tiles
    */
-  void parse_tiles(std::vector<TileInfo>& p_tiles);
+  void parse_tiles(std::vector<TileInfo>& p_tiles) const;
+
+  /*
+   * Parse "constraints" section of the config file and stroe values in the given reference
+   *
+   * Params:
+   *       ConstraintInfo p_cons_info: Reference to ConstraintInfo struct to store parsed data
+   */
+  void parse_constraints(wfc::ConstraintInfo& p_cons_info) const;
 
 private:
   std::filesystem::path config_path__;
@@ -132,7 +161,7 @@ private:
    * Params:
    *       vector<TileInfo> p_tiles: Reference to the vector that contains all the tiles
    */
-  void resolve_tile_inversion__(std::vector<TileInfo>& p_tiles);
+  void resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) const;
 
   /*
    * Open the json file at given path and read it
@@ -140,7 +169,7 @@ private:
    * Params:
    *       String p_path: Path to the config file
    */
-  json open_sub_config__(const std::string& p_path);
+  json open_sub_config__(const std::string& p_path) const;
 };
 
 }
