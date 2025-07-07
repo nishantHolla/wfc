@@ -19,6 +19,8 @@ wfc::Canvas::Canvas(size_t p_width, size_t p_height, size_t p_rows, size_t p_col
   tile_height__(height__ / columns__),
   direction_type__(DirectionType::QUAD_DIRECTIONS) {
 
+  /// Create SDL window and renderer for the canvas
+
   window__ = SDL_CreateWindow("WFC",
                               SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED,
@@ -36,14 +38,21 @@ wfc::Canvas::Canvas(size_t p_width, size_t p_height, size_t p_rows, size_t p_col
     throw std::runtime_error("SDL Renderer creation failed.\n");
   }
 
+  /// Initialize canvas values
+
   create_null_texture__();
   buffer__.resize(rows__ * columns__);
 }
 
 wfc::Canvas::~Canvas() {
+
+  /// Free all tiles in the canvas
+
   for (auto& item : tiles__) {
     delete item.second;
   }
+
+  /// Deinitialize SDL and canvas values
 
   buffer__.clear();
   SDL_DestroyRenderer(renderer__);
@@ -55,68 +64,82 @@ void wfc::Canvas::set_direction_type(const wfc::DirectionType p_dir_type) {
 }
 
 void wfc::Canvas::add_tile(const std::string& p_name, const std::string& p_path) {
+
+  /// Check if tile is already known to the canvas
+
   if (tiles__.find(p_name) != tiles__.end()) {
     char msg[100];
     sprintf(msg, "Tile with name %s already exists", p_name.c_str());
     throw std::runtime_error(msg);
   }
 
+  /// Add tile to the canvas
+
   fs::path abs_path = fs::absolute(p_path);
   tiles__[p_name] = new wfc::Tile(abs_path, renderer__);
 }
 
 void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir, const std::string& p_to) {
+
+  /// Check if the source tile is not known to the canvas
+
   if (tiles__.find(p_for) == tiles__.end()) {
     char msg[100];
     sprintf(msg, "Tile with name %s does not exist", p_for.c_str());
     throw std::runtime_error(msg);
   }
+
+  /// Check if the destination tile is not known to the canvas
 
   if (tiles__.find(p_to) == tiles__.end()) {
     char msg[100];
     sprintf(msg, "Tile with name %s does not exist", p_to.c_str());
   }
 
+  /// Add rule to the tile
+
   tiles__[p_for]->add_rule(p_dir, tiles__[p_to]);
 }
 
 void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir,
                            const std::initializer_list<const std::string> p_to) {
-  if (tiles__.find(p_for) == tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s does not exist", p_for.c_str());
-    throw std::runtime_error(msg);
-  }
+
+  /// Call add_rule for each tile in the initializer_list
 
   for (const auto& tile : p_to) {
-    if (tiles__.find(tile) == tiles__.end()) {
-      char msg[100];
-      sprintf(msg, "Tile with name %s does not exist", tile.c_str());
-      throw std::runtime_error(msg);
-    }
-
-    tiles__[p_for]->add_rule(p_dir, tiles__[tile]);
+    add_rule(p_for, p_dir, tile);
   }
 }
 
 void wfc::Canvas::reset() {
+
+  /// Set the possible_tiles for each tiles to all the tiles known to the canvas
+
   std::unordered_set<Tile*> possible_tiles;
   for (const auto& item : tiles__) {
     possible_tiles.insert(item.second);
   }
+
+  /// Reset the buffer__
 
   for (size_t i = 0, e = buffer__.size(); i < e; ++i) {
     buffer__[i].tile = nullptr;
     buffer__[i].possible_tiles = possible_tiles;
   }
 
+  /// Reset number of tiles collapsed
+
   collapsed_count__ = 0;
 }
 
 bool wfc::Canvas::collapse_next() {
+  /// Check if uncollapsed tile exists
+
   if (collapsed_count__ == rows__ * columns__) {
     return true;
   }
+
+  /// Collapse the tile with the lowest entropy
 
   size_t spot_idx = get_lowest_entropy_spot_idx__();
   wfc::Spot* spot = &buffer__[spot_idx];
@@ -124,8 +147,12 @@ bool wfc::Canvas::collapse_next() {
     return false;
   }
 
+  /// Select a tile to collapse into
+
   size_t tile_selection_idx = wfc::Random::int_from_range(0, spot->possible_tiles.size());
   wfc::Tile* tile = *wfc::select_from(spot->possible_tiles, tile_selection_idx);
+
+  // Collapse the tile
 
   spot->tile = tile;
   spot->possible_tiles.clear();
@@ -135,11 +162,19 @@ bool wfc::Canvas::collapse_next() {
 }
 
 void wfc::Canvas::render() {
+
+  /// Clear the window
+
   SDL_RenderClear(renderer__);
+
+  /// Loop through buffer__ and add tiles to the window
 
   for (size_t row = 0; row < rows__; ++row) {
     for (size_t col = 0; col < columns__; ++col) {
       size_t idx = (row * columns__) + col;
+
+      /// Calculate the position of the tile in the window
+
       SDL_Rect pos_rect = {
         static_cast<int>((col * tile_width__)),
         static_cast<int>((row * tile_height__)),
@@ -147,16 +182,23 @@ void wfc::Canvas::render() {
         static_cast<int>(tile_height__)
       };
 
+
+      /// Check if the tile is collapsed or not
+
       wfc::Tile* tile = buffer__[idx].tile;
       SDL_Texture* texture = tile ? tile->get_texture() : null_texture__;
       SDL_RenderCopy(renderer__, texture, nullptr, &pos_rect);
     }
   }
 
+  /// Present the window
+
   SDL_RenderPresent(renderer__);
 }
 
 void wfc::Canvas::create_null_texture__() {
+  /// Create a texture to represent uncollapsed tiles
+
   null_texture__ = SDL_CreateTexture(renderer__, SDL_PIXELFORMAT_RGBA8888,
                                      SDL_TEXTUREACCESS_TARGET, tile_width__, tile_height__);
 
@@ -164,11 +206,17 @@ void wfc::Canvas::create_null_texture__() {
     throw std::runtime_error("Failed to create null texture");
   }
 
+  /// Store the current render target
+
   SDL_Texture* previous_target = SDL_GetRenderTarget(renderer__);
+
+  /// Fill the texture with color black
 
   SDL_SetRenderTarget(renderer__, null_texture__);
   SDL_SetRenderDrawColor(renderer__, 0, 0, 0, 0);
   SDL_RenderClear(renderer__);
+
+  /// Draw white border around the texture
 
   SDL_SetRenderDrawColor(renderer__, 255, 255, 255, 255);
   SDL_Rect full_rect = {0, 0, static_cast<int>(tile_width__), static_cast<int>(tile_height__)};
@@ -184,11 +232,15 @@ void wfc::Canvas::create_null_texture__() {
   };
   SDL_RenderFillRect(renderer__, &innerRect);
 
+  /// Restore the render target
+
   SDL_SetRenderTarget(renderer__, previous_target);
 }
 
 size_t wfc::Canvas::get_lowest_entropy_spot_idx__() {
   size_t min_entropy = tiles__.size();
+
+  /// Calculate the minimum entropy in the canvas
 
   for (const auto& spot : buffer__) {
     if (spot.tile != nullptr) {
@@ -197,6 +249,8 @@ size_t wfc::Canvas::get_lowest_entropy_spot_idx__() {
     min_entropy = std::min(min_entropy, spot.possible_tiles.size());
   }
 
+  /// Collect all tiles that have the minimum entropy
+
   std::vector<size_t> min_entropy_spots;
   for (size_t i = 0, e = buffer__.size(); i < e; ++i) {
     if (buffer__[i].possible_tiles.size() == min_entropy) {
@@ -204,10 +258,14 @@ size_t wfc::Canvas::get_lowest_entropy_spot_idx__() {
     }
   }
 
+  /// Return a random spot with minimum entropy
+
   return min_entropy_spots[wfc::Random::int_from_range(0, min_entropy_spots.size())];
 }
 
 void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
+  /// Get the spot to reduce entropy around
+
   wfc::Spot* current_spot = &buffer__[p_spot_idx];
 
   if (current_spot->tile == nullptr) {
@@ -218,11 +276,19 @@ void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
   size_t col_number = p_spot_idx % columns__;
 
   auto reduce_for = [](wfc::Spot* spot, wfc::Spot* current, wfc::Directions dir){
+    /// Get the rules of the tile of current spot
+
     std::unordered_set<wfc::Tile*> rules = current->tile->get_rules(dir);
     if (rules.size() == 0) {
       return;
     }
+
+    /// Get the current possibilities of reducing spot
+
     std::unordered_set<wfc::Tile*>& current_possibilities = spot->possible_tiles;
+
+    /// Find intersection
+
     spot->possible_tiles = wfc::set_intersection(current_possibilities, rules);
   };
 
@@ -269,8 +335,4 @@ void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
     wfc::Spot* bottom_right_spot = &buffer__[p_spot_idx + columns__ + 1];
     reduce_for(bottom_right_spot, current_spot, wfc::Directions::SOUTH_EAST);
   }
-}
-
-void wfc::Canvas::test(size_t idx) {
-  std::cout << buffer__[idx].possible_tiles.size();
 }

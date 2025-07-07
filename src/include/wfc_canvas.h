@@ -111,8 +111,6 @@ public:
    */
   void render();
 
-  void test(size_t idx);
-
 private:
   const size_t width__;
   const size_t height__;

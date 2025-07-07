@@ -2,14 +2,18 @@
 #include "wfc_canvas.h"
 #include "wfc.h"
 #include "wfc_utils.h"
+#include "wfc_log.h"
 
 #include <fstream>
 #include <iostream>
 
 using json = nlohmann::json;
+namespace fs = std::filesystem;
 
 wfc::Parser::Parser(const std::string& p_config_path) :
   config_path__(p_config_path) {
+
+  /// Open input stream for config file
 
   std::ifstream config_stream(config_path__);
   if (!config_stream) {
@@ -18,16 +22,26 @@ wfc::Parser::Parser(const std::string& p_config_path) :
     throw std::runtime_error(msg);
   }
 
+  /// Create json object
+
   config_json__ = json::parse(config_stream);
+
+  /// Close input stream for config file
+
   config_stream.close();
 }
 
 void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
+
+  /// Check if canvas section is defined
+
   if (!config_json__.contains("canvas")) {
     char msg[500];
     sprintf(msg, "Path \"/canvas\" is missing in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
+
+  /// Parse values in canvas section
 
   auto& section = config_json__["canvas"];
   p_canvas_info.width = parse_positive_int__(section, "width", "/canvas");
@@ -51,6 +65,9 @@ void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
 }
 
 void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
+
+  /// Check if tiles section is defined
+
   if (!config_json__.contains("tiles")) {
     char msg[500];
     sprintf(msg, "Path \"/tiles\" is missing in config file %s", config_path__.c_str());
@@ -60,7 +77,7 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   auto parse_tile_section = [this](const json& section, std::vector<TileInfo>& p_tiles){
     for (auto& [key, item]: section.items()) {
       const std::string path = parse_string__(item, "path", "/tiles/" + key);
-      wfc::TileInfo tile(key, std::filesystem::absolute(path));
+      wfc::TileInfo tile(key, fs::absolute(path));
 
       if (!item.contains("rules")) {
         char msg[500];
@@ -74,17 +91,31 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
   };
 
   auto& section = config_json__["tiles"];
-  if (section.is_object()) {
+
+  if (section.is_object()) { /// If tiles section is object then parse the tiles
     parse_tile_section(section, p_tiles);
   }
-  else if (section.is_array()) {
+
+  else if (section.is_array()) { /// If tiles section is an array then it is a list of sub config files
     for (auto& v : section) {
-      std::filesystem::path saved_path = std::filesystem::current_path();
-      std::filesystem::path sub_config_path(v);
-      std::filesystem::current_path(sub_config_path.parent_path());
+      /// Save current directory
+
+      fs::path saved_path = fs::current_path();
+
+      /// Resolve the path to sub config file
+
+      fs::path sub_config_path(v);
+      fs::current_path(sub_config_path.parent_path());
+
+      /// Parse sub config file
+
+      wfc::Log::info("Parsing sub config file at " + sub_config_path.string() + "...");
       json sub_config = open_sub_config__(sub_config_path.filename());
       parse_tile_section(sub_config, p_tiles);
-      std::filesystem::current_path(saved_path);
+
+      /// Restore directory
+
+      fs::current_path(saved_path);
     }
   }
   else {
@@ -93,11 +124,14 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
     throw std::runtime_error(msg);
   }
 
+  /// Resolve rules of tiles that were defined using inversion
+
   resolve_tile_inversion__(p_tiles);
 }
 
 size_t wfc::Parser::parse_positive_int__(const json& section, const std::string& p_key,
                                        const std::string& p_path) const {
+  /// Check if the key exists
 
   if (!section.contains(p_key)) {
     char msg[500];
@@ -105,6 +139,8 @@ size_t wfc::Parser::parse_positive_int__(const json& section, const std::string&
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
+
+  /// Check if the key is a positive number
 
   if (section[p_key].type() != json::value_t::number_unsigned) {
     char msg[500];
@@ -118,12 +154,16 @@ size_t wfc::Parser::parse_positive_int__(const json& section, const std::string&
 std::string wfc::Parser::parse_string__(const json& section, const std::string& p_key,
                                         const std::string& p_path) const {
 
+  /// Check if the key exists
+
   if (!section.contains(p_key)) {
     char msg[500];
     sprintf(msg, "path \"%s/%s\" is missing in config file %s", p_path.c_str(), p_key.c_str(),
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
+
+  /// Check if the key is a string
 
   if (section[p_key].type() != json::value_t::string) {
     char msg[500];
@@ -137,12 +177,16 @@ std::string wfc::Parser::parse_string__(const json& section, const std::string& 
 bool wfc::Parser::parse_bool__(const json& section, const std::string& p_key,
                                         const std::string& p_path) const {
 
+  /// Check if the key exists
+
   if (!section.contains(p_key)) {
     char msg[500];
     sprintf(msg, "path \"%s/%s\" is missing in config file %s", p_path.c_str(), p_key.c_str(),
             config_path__.c_str());
     throw std::runtime_error(msg);
   }
+
+  /// Check if the key is a boolean
 
   if (section[p_key].type() != json::value_t::boolean) {
     char msg[500];
@@ -155,6 +199,9 @@ bool wfc::Parser::parse_bool__(const json& section, const std::string& p_key,
 
 void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const {
   using wfc::Directions;
+
+  /// Map enums to the strings expected in the config file
+
   std::unordered_map<wfc::Directions, std::string> dir_map = {
     {Directions::NORTH, "north"},
     {Directions::NORTH_EAST, "north_east"},
@@ -166,41 +213,55 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
     {Directions::NORTH_WEST, "north_west"},
   };
 
+  /// Go through all the rules of the tile
+
   for (const auto& [key, value] : dir_map) {
     std::string negation_value = "!" + value;
 
-    if (section.contains(negation_value)) {
+    if (section.contains(negation_value)) { /// Check if the rule for the direction is negated
       std::vector<std::string> rule_vec = section[negation_value].get<std::vector<std::string>>();
       std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
       tile.rules[key] = rules;
       tile.directions_to_invert.insert(key);
     }
-    else if (section.contains(value)) {
+    else if (section.contains(value)) { /// Check if the rule for the direction exists
       std::vector<std::string> rule_vec = section[value].get<std::vector<std::string>>();
       std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
       tile.rules[key] = rules;
     }
-    else {
+    else { /// The rule for the direction is empty
       tile.rules[key] = {};
     }
   }
 }
 
 void wfc::Parser::resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) {
+
+  /// Collect names of all tiles
+
   std::unordered_set<std::string> all_tile_names;
   for (const TileInfo& tile : p_tiles) {
     all_tile_names.insert(tile.name);
   }
 
+  /// Go throug all tiles and see if any of their rules is neagated
+
   for (TileInfo& tile : p_tiles) {
     for (const wfc::Directions& dir : tile.directions_to_invert) {
+
+      /// Negate the rule set
+
       tile.rules[dir] = set_difference(all_tile_names, tile.rules[dir]);
     }
   }
 }
 
 json wfc::Parser::open_sub_config__(const std::string& p_path) {
+  /// Check the sub config file
+
   check_config_file(p_path);
+
+  /// Open input stream for sub config file
 
   std::ifstream config_stream(p_path);
   if (!config_stream) {
@@ -209,8 +270,12 @@ json wfc::Parser::open_sub_config__(const std::string& p_path) {
     throw std::runtime_error(msg);
   }
 
+  /// Create json object
+
   json config_json = json::parse(config_stream);
   config_stream.close();
+
+  /// Close input stream for config file
 
   return config_json;
 }

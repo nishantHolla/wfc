@@ -1,15 +1,23 @@
 #include "wfc.h"
 #include "wfc_sdl_utils.h"
 #include "wfc_parser.h"
+#include "wfc_log.h"
 
-void wfc::check_config_file(const std::filesystem::path& p_config_path) {
-  if (!std::filesystem::exists(p_config_path)) {
+namespace fs = std::filesystem;
+
+void wfc::check_config_file(const fs::path& p_config_path) {
+
+  /// Check if the path exists
+
+  if (!fs::exists(p_config_path)) {
     char msg[500];
-    sprintf(msg, "Could not open config file at path %s (current directory: %s)", p_config_path.c_str(), std::filesystem::current_path().c_str());
+    sprintf(msg, "Could not open config file at path %s (current directory: %s)", p_config_path.c_str(), fs::current_path().c_str());
     throw std::runtime_error(msg);
   }
 
-  if (!(std::filesystem::is_regular_file(p_config_path) &&
+  /// Check if the path is a json file
+
+  if (!(fs::is_regular_file(p_config_path) &&
            p_config_path.has_extension() &&
            p_config_path.extension() == ".json")) {
     char msg[100];
@@ -19,9 +27,13 @@ void wfc::check_config_file(const std::filesystem::path& p_config_path) {
 }
 
 wfc::Canvas* wfc::init(const std::string& p_config_path) {
+  wfc::Log::info("Initializing SDL...");
   wfc::init_sdl();
+
+  wfc::Log::info("Initializing parser... ");
   wfc::Parser parser(p_config_path);
 
+  wfc::Log::info("Parsing canvas config at " + p_config_path + "...");
   wfc::CanvasInfo canvas_info;
   parser.parse_canvas(canvas_info);
   wfc::Canvas* canvas = new wfc::Canvas(
@@ -32,13 +44,16 @@ wfc::Canvas* wfc::init(const std::string& p_config_path) {
   );
   canvas->set_direction_type(canvas_info.direction_type);
 
+  wfc::Log::info("Parsing tiles config at " + p_config_path + "...");
   std::vector<wfc::TileInfo> tiles;
   parser.parse_tiles(tiles);
 
+  wfc::Log::info("Adding parsed tiles to canvas...");
   for (wfc::TileInfo tile: tiles) {
     canvas->add_tile(tile.name, tile.path);
   }
 
+  wfc::Log::info("Adding parsed rules to tiles...");
   for (wfc::TileInfo tile: tiles) {
     for (auto& item: tile.rules) {
       for (auto& t: item.second) {
@@ -47,7 +62,9 @@ wfc::Canvas* wfc::init(const std::string& p_config_path) {
     }
   }
 
+  wfc::Log::info("Clearing canvas buffer...");
   canvas->reset();
+
   return canvas;
 }
 
