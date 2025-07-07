@@ -2,7 +2,7 @@
   "LEFT": {
     "path": "left.png",
     "rules": {
-      "north": ["RIGHT", "LEFT", "DOWN"],
+      "!north": ["RIGHT", "LEFT", "DOWN"],
       "east": ["RIGHT", "BLANK"],
       "south": ["RIGHT", "LEFT", "UP"],
       "west": ["RIGHT", "DOWN", "UP"]
