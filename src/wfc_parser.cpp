@@ -1,6 +1,7 @@
 #include "wfc_parser.h"
 #include "wfc_canvas.h"
 #include "wfc.h"
+#include "wfc_utils.h"
 
 #include <fstream>
 #include <iostream>
@@ -91,6 +92,8 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) {
     sprintf(msg, "Path \"/tiles\" is expected to be an object or array in config file %s", config_path__.c_str());
     throw std::runtime_error(msg);
   }
+
+  resolve_tile_inversion__(p_tiles);
 }
 
 size_t wfc::Parser::parse_positive_int__(const json& section, const std::string& p_key,
@@ -164,11 +167,34 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
   };
 
   for (const auto& [key, value] : dir_map) {
-    if (section.contains(value)) {
-      tile.rules[key] = section[value].get<std::vector<std::string>>();
+    std::string negation_value = "!" + value;
+
+    if (section.contains(negation_value)) {
+      std::vector<std::string> rule_vec = section[negation_value].get<std::vector<std::string>>();
+      std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
+      tile.rules[key] = rules;
+      tile.directions_to_invert.insert(key);
+    }
+    else if (section.contains(value)) {
+      std::vector<std::string> rule_vec = section[value].get<std::vector<std::string>>();
+      std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
+      tile.rules[key] = rules;
     }
     else {
       tile.rules[key] = {};
+    }
+  }
+}
+
+void wfc::Parser::resolve_tile_inversion__(std::vector<TileInfo>& p_tiles) {
+  std::unordered_set<std::string> all_tile_names;
+  for (const TileInfo& tile : p_tiles) {
+    all_tile_names.insert(tile.name);
+  }
+
+  for (TileInfo& tile : p_tiles) {
+    for (const wfc::Directions& dir : tile.directions_to_invert) {
+      tile.rules[dir] = set_difference(all_tile_names, tile.rules[dir]);
     }
   }
 }

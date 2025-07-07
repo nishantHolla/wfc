@@ -24,6 +24,21 @@ std::unordered_set<S> set_intersection(const std::unordered_set<S>& set1, const 
   return result;
 }
 
+/*
+ * Find difference of one set from other
+ */
+template<typename S>
+std::unordered_set<S> set_difference(const std::unordered_set<S>& set1, const std::unordered_set<S>& set2) {
+  std::unordered_set<S> result;
+  for (const S& elem : set1) {
+    if (set2.count(elem) == 0) {
+      result.insert(elem);
+    }
+  }
+
+  return result;
+}
+
 template<typename S>
 auto select_from(const S &s, size_t n) {
   auto it = std::begin(s);
@@ -31,7 +46,6 @@ auto select_from(const S &s, size_t n) {
   std::advance(it,n);
   return it;
 }
-
 
 }
 

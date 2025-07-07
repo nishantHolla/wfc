@@ -24,14 +24,15 @@ struct CanvasInfo {
 struct TileInfo {
   std::string name;
   std::string path;
-  std::unordered_map<wfc::Directions, std::vector<std::string>> rules;
+  std::unordered_set<wfc::Directions> directions_to_invert;
+  std::unordered_map<wfc::Directions, std::unordered_set<std::string>> rules;
   TileInfo(const std::string& p_name, const std::string& p_path) :
     name(p_name),
     path(p_path) {
   }
 
   void add_rule(wfc::Directions p_dir, const std::string& p_tile_name) {
-    rules[p_dir].emplace_back(p_tile_name);
+    rules[p_dir].insert(p_tile_name);
   }
 };
 
@@ -124,6 +125,14 @@ private:
    *       json     section: Json section that contains the rules
    */
   void parse_tile_rules__(TileInfo& tile, const json& section) const;
+
+  /*
+   * Resolve the rules that need to be inverted
+   *
+   * Params:
+   *       vector<TileInfo> p_tiles: Reference to the vector that contains all the tiles
+   */
+  void resolve_tile_inversion__(std::vector<TileInfo>& p_tiles);
 
   /*
    * Open the json file at given path and read it
