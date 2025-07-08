@@ -21,6 +21,19 @@ enum class DirectionType {
   OCT_DIRECTIONS
 };
 
+enum class Constraints {
+  TOP,
+  TOP_RIGHT,
+  RIGHT,
+  BOTTOM_RIGHT,
+  BOTTOM,
+  BOTTOM_LEFT,
+  LEFT,
+  TOP_LEFT,
+  EDGES,
+  CORNERS
+};
+
 }
 
 std::ostream& operator<<(std::ostream& out, const wfc::Directions& dir);

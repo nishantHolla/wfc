@@ -62,6 +62,32 @@ wfc::Canvas* wfc::init(const std::string& p_config_path) {
     }
   }
 
+  wfc::Log::info("Parsing constraints at " + p_config_path + "...");
+  wfc::ConstraintInfo constraints;
+  parser.parse_constraints(constraints);
+
+  wfc::Log::info("Adding constraints to canvas...");
+  auto add_constraint = [canvas](wfc::Constraints dir, const std::unordered_set<std::string>& set){
+    for (auto& tile : set) {
+      canvas->add_constraint(dir, tile);
+    }
+  };
+
+  add_constraint(wfc::Constraints::TOP, constraints.top);
+  add_constraint(wfc::Constraints::TOP_RIGHT, constraints.top_right);
+  add_constraint(wfc::Constraints::RIGHT, constraints.right);
+  add_constraint(wfc::Constraints::BOTTOM_RIGHT, constraints.bottom_right);
+  add_constraint(wfc::Constraints::BOTTOM, constraints.bottom);
+  add_constraint(wfc::Constraints::BOTTOM_LEFT, constraints.bottom_left);
+  add_constraint(wfc::Constraints::LEFT, constraints.left);
+  add_constraint(wfc::Constraints::TOP_LEFT, constraints.top_left);
+
+  for (auto& fixed : constraints.fixed) {
+    for (const std::string& tile : fixed.tiles) {
+      canvas->add_constraint(fixed.row, fixed.column, tile);
+    }
+  }
+
   wfc::Log::info("Clearing canvas buffer...");
   canvas->reset();
 

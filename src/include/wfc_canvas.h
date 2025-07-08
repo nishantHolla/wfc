@@ -3,6 +3,7 @@
 
 #include "wfc_directions.h"
 #include "wfc_tile.h"
+#include "wfc_utils.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -94,6 +95,32 @@ public:
                 const std::initializer_list<const std::string> p_to);
 
   /*
+   * Add a constraint to the canvas for edges
+   *
+   * Params:
+   *       Constraints p_cons: Constraint type to be added for
+   *       String      p_tile: Name of the tile for the constraint
+   *
+   * Throws:
+   *       If tile with name p_tile does not exist in tiles__
+   */
+  void add_constraint(wfc::Constraints p_cons, const std::string& p_tile);
+
+  /*
+   * Add a constraint to the canvas for coordinates
+   *
+   * Params:
+   *       size_t  p_x   : x coordinate of the constraint
+   *       size_t  p_y   : y coordinate of the constraint
+   *       String  p_tile: Name of the tile for the constraint
+   *
+   * Throws:
+   *       If tile with name p_tile does not exist in tiles__
+   *       If the coordinates are out of bound
+   */
+  void add_constraint(size_t x, size_t y, const std::string& p_tile);
+
+  /*
    * Reset the canvas
    */
   void reset();
@@ -112,6 +139,11 @@ public:
   void render();
 
 private:
+  struct Constraints {
+    std::unordered_map<wfc::Constraints, std::unordered_set<wfc::Tile*>> others;
+    std::unordered_map<size_t, std::unordered_set<wfc::Tile*>> fixed;
+  };
+
   const size_t width__;
   const size_t height__;
   const size_t rows__;
@@ -120,6 +152,7 @@ private:
   const size_t tile_height__;
   wfc::DirectionType direction_type__;
   std::unordered_map<std::string, wfc::Tile*> tiles__;
+  Constraints constraints__;
   SDL_Window* window__;
   SDL_Renderer* renderer__;
   std::vector<wfc::Spot> buffer__;
@@ -148,6 +181,11 @@ private:
    *       size_t p_spot_idx: Index of the spot in buffer__ to look around
    */
   void reduce_entropy_arround__(size_t p_spot_idx);
+
+  /*
+   * Apply constraints defined in constraints__ to the buffer
+   */
+  void apply_constraints__();
 };
 
 }

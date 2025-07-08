@@ -101,6 +101,45 @@ void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir, cons
   tiles__[p_for]->add_rule(p_dir, tiles__[p_to]);
 }
 
+void wfc::Canvas::add_constraint(wfc::Constraints p_cons, const std::string& p_tile) {
+
+  /// Check if the source tile is not known to the canvas
+
+  if (tiles__.find(p_tile) == tiles__.end()) {
+    char msg[100];
+    sprintf(msg, "Tile with name %s does not exist", p_tile.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  /// Add the constraint to the canvas
+
+  constraints__.others[p_cons].insert(tiles__[p_tile]);
+}
+
+void wfc::Canvas::add_constraint(size_t x, size_t y, const std::string& p_tile) {
+
+  /// Check if the source tile is not known to the canvas
+
+  if (tiles__.find(p_tile) == tiles__.end()) {
+    char msg[100];
+    sprintf(msg, "Tile with name %s does not exist", p_tile.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  /// Check if the coordinate are out of bound
+
+  size_t idx = y * columns__ + x;
+  if (idx >= buffer__.size()) {
+    char msg[100];
+    sprintf(msg, "Coordninate %zu, %zu is out of bound", x, y);
+    throw std::runtime_error(msg);
+  }
+
+  /// Add the constraint to the canvas
+
+  constraints__.fixed[idx].insert(tiles__[p_tile]);
+}
+
 void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir,
                            const std::initializer_list<const std::string> p_to) {
 
@@ -113,7 +152,7 @@ void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir,
 
 void wfc::Canvas::reset() {
 
-  /// Set the possible_tiles for each tiles to all the tiles known to the canvas
+  /// Get list of all possible_tiles
 
   std::unordered_set<Tile*> possible_tiles;
   for (const auto& item : tiles__) {
@@ -126,6 +165,8 @@ void wfc::Canvas::reset() {
     buffer__[i].tile = nullptr;
     buffer__[i].possible_tiles = possible_tiles;
   }
+
+  apply_constraints__();
 
   /// Reset number of tiles collapsed
 
@@ -334,5 +375,74 @@ void wfc::Canvas::reduce_entropy_arround__(size_t p_spot_idx) {
   if (row_number != rows__ - 1 && col_number != columns__ - 1) { /// Bottom Right spot exists
     wfc::Spot* bottom_right_spot = &buffer__[p_spot_idx + columns__ + 1];
     reduce_for(bottom_right_spot, current_spot, wfc::Directions::SOUTH_EAST);
+  }
+}
+
+void wfc::Canvas::apply_constraints__() {
+
+  /// Top Row
+
+  if (constraints__.others[wfc::Constraints::TOP].size() > 0) {
+    for (size_t i = 0; i < columns__; ++i) {
+      buffer__[i].possible_tiles = constraints__.others[wfc::Constraints::TOP];
+    }
+  }
+
+  /// Bottom Row
+
+  if (constraints__.others[wfc::Constraints::BOTTOM].size() > 0) {
+    for (size_t i = buffer__.size() - columns__, e = buffer__.size(); i < e; ++i) {
+      buffer__[i].possible_tiles = constraints__.others[wfc::Constraints::BOTTOM];
+    }
+  }
+
+  /// Left Column
+
+  if (constraints__.others[wfc::Constraints::LEFT].size() > 0) {
+    for (size_t i = 0, e = buffer__.size(); i < e; i += columns__) {
+      buffer__[i].possible_tiles = constraints__.others[wfc::Constraints::LEFT];
+    }
+  }
+
+  /// Right Column
+
+  if (constraints__.others[wfc::Constraints::RIGHT].size() > 0) {
+    for (size_t i = columns__ - 1, e = buffer__.size(); i < e; i += columns__) {
+      buffer__[i].possible_tiles = constraints__.others[wfc::Constraints::RIGHT];
+    }
+  }
+
+  /// Top Right Spot
+
+  size_t top_right_index = columns__ - 1;
+  if (constraints__.others[wfc::Constraints::TOP_RIGHT].size() > 0) {
+    buffer__[top_right_index].possible_tiles = constraints__.others[wfc::Constraints::TOP_RIGHT];
+  }
+
+  /// Bottom Right Spot
+
+  size_t bottom_right_index = buffer__.size() - 1;
+  if (constraints__.others[wfc::Constraints::BOTTOM_RIGHT].size() > 0) {
+    buffer__[bottom_right_index].possible_tiles = constraints__.others[wfc::Constraints::BOTTOM_RIGHT];
+  }
+
+  /// Bottom Left Spot
+
+  size_t bottom_left_index = buffer__.size() - columns__;
+  if (constraints__.others[wfc::Constraints::BOTTOM_LEFT].size() > 0) {
+    buffer__[bottom_left_index].possible_tiles = constraints__.others[wfc::Constraints::BOTTOM_LEFT];
+  }
+
+  /// Top Left Spot
+
+  size_t top_left_index = 0;
+  if (constraints__.others[wfc::Constraints::TOP_LEFT].size() > 0) {
+    buffer__[top_left_index].possible_tiles = constraints__.others[wfc::Constraints::TOP_LEFT];
+  }
+
+  /// Fixed
+
+  for (auto& [idx, value]: constraints__.fixed) {
+    buffer__[idx].possible_tiles = value;
   }
 }
