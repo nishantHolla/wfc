@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
-#include <initializer_list>
 #include <vector>
 #include <unordered_set>
 
@@ -84,15 +83,14 @@ public:
    * Add more than one rule of placement for tile in the canvas
    *
    * Params:
-   *       String     p_for: Name of the tile for which to add the rule
-   *       Directions p_dir: Direction to add the rule in
-   *       String     p_to : Initializer list of names of the tile in the rule
+   *       String         p_for: Name of the tile for which to add the rule
+   *       Directions     p_dir: Direction to add the rule in
+   *       Vector<String> p_to : List of names of the tile in the rule
    *
    * Throws:
    *       If tile with name p_for or p_to does not exist in tiles__
    */
-  void add_rule(const std::string& p_for, wfc::Directions p_dir,
-                const std::initializer_list<const std::string> p_to);
+  void add_rule(const std::string& p_for, wfc::Directions p_dir, const std::vector<std::string>& p_to);
 
   /*
    * Add a constraint to the canvas for edges

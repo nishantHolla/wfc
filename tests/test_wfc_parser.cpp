@@ -17,6 +17,14 @@ std::ostream& operator<<(std::ostream& out, const std::unordered_set<std::string
   return out;
 }
 
+std::ostream& operator<<(std::ostream& out, const std::vector<std::string>& set) {
+  for (auto& item : set) {
+    out << item << " ";
+  }
+  out << "\n";
+  return out;
+}
+
 void test(const std::string& p_config_path) {
   std::filesystem::path config_path(p_config_path);
   wfc::check_config_file(p_config_path);
@@ -33,6 +41,14 @@ void test(const std::string& p_config_path) {
          canvas_info.rows,
          canvas_info.columns,
          dir_type_str.c_str());
+  test_case(true);
+
+  /// Parse grousp
+  wfc::GroupInfo groups;
+  parser.parse_groups(groups);
+  for (auto& [key, value]: groups.groups) {
+    std::cout << key << ": " << value << "\n";
+  }
   test_case(true);
 
   /// Parse tiles

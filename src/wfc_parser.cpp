@@ -64,7 +64,7 @@ void wfc::Parser::parse_canvas(wfc::CanvasInfo& p_canvas_info) const {
 
 }
 
-void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
+void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles, const wfc::GroupInfo& p_groups) const {
 
   /// Check if tiles section is defined
 
@@ -74,7 +74,7 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
     throw std::runtime_error(msg);
   }
 
-  auto parse_tile_section = [this](const json& section, std::vector<TileInfo>& p_tiles){
+  auto parse_tile_section = [this, &p_groups, &p_tiles](const json& section){
     for (auto& [key, item]: section.items()) {
       const std::string path = parse_string__(item, "path", "/tiles/" + key);
       wfc::TileInfo tile(key, fs::absolute(path));
@@ -85,7 +85,7 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
         throw std::runtime_error(msg);
       }
 
-      parse_tile_rules__(tile, item["rules"]);
+      parse_tile_rules__(tile, item["rules"], p_groups);
       p_tiles.emplace_back(tile);
     }
   };
@@ -93,7 +93,7 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
   auto& section = config_json__["tiles"];
 
   if (section.is_object()) { /// If tiles section is object then parse the tiles
-    parse_tile_section(section, p_tiles);
+    parse_tile_section(section);
   }
 
   else if (section.is_array()) { /// If tiles section is an array then it is a list of sub config files
@@ -111,7 +111,7 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
 
       wfc::Log::info("Parsing sub config file at " + sub_config_path.string() + "...");
       json sub_config = open_sub_config__(sub_config_path.filename());
-      parse_tile_section(sub_config, p_tiles);
+      parse_tile_section(sub_config);
 
       /// Restore directory
 
@@ -127,6 +127,23 @@ void wfc::Parser::parse_tiles(std::vector<TileInfo>& p_tiles) const {
   /// Resolve rules of tiles that were defined using inversion
 
   resolve_tile_inversion__(p_tiles);
+}
+
+void wfc::Parser::parse_groups(wfc::GroupInfo& p_group) const {
+  if (!config_json__.contains("groups")) {
+    return;
+  }
+
+  if (!config_json__["groups"].is_object()) {
+    char msg[500];
+    sprintf(msg, "Path \"/groups\" is expected to be an object in config file %s", config_path__.c_str());
+    throw std::runtime_error(msg);
+  }
+
+  json section = config_json__["groups"];
+  for (auto& [key, value]: section.items()) {
+    p_group.groups[key] = value.get<std::vector<std::string>>();
+  }
 }
 
 void wfc::Parser::parse_constraints(wfc::ConstraintInfo& p_cons_info) const {
@@ -260,7 +277,8 @@ bool wfc::Parser::parse_bool__(const json& section, const std::string& p_key,
   return section[p_key];
 }
 
-void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const {
+void wfc::Parser::parse_tile_rules__(TileInfo& p_tile, const json& p_section, const wfc::GroupInfo& p_group_info) const {
+  auto& groups = p_group_info.groups;
   using wfc::Directions;
 
   /// Map enums to the strings expected in the config file
@@ -276,24 +294,37 @@ void wfc::Parser::parse_tile_rules__(TileInfo& tile, const json& section) const 
     {Directions::NORTH_WEST, "north_west"},
   };
 
+  auto add_rules = [&groups, &p_tile](wfc::Directions key, std::vector<std::string>& rules) {
+    std::unordered_set<std::string> rule_set;
+    for (const std::string& rule : rules) {
+      if (groups.find(rule) != groups.end()) {
+        for (const std::string& gr: groups.at(rule)) {
+          rule_set.insert(gr);
+        }
+      }
+      else {
+        rule_set.insert(rule);
+      }
+    }
+    p_tile.rules[key] = rule_set;
+  };
+
   /// Go through all the rules of the tile
 
   for (const auto& [key, value] : dir_map) {
     std::string negation_value = "!" + value;
 
-    if (section.contains(negation_value)) { /// Check if the rule for the direction is negated
-      std::vector<std::string> rule_vec = section[negation_value].get<std::vector<std::string>>();
-      std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
-      tile.rules[key] = rules;
-      tile.directions_to_invert.insert(key);
+    if (p_section.contains(negation_value)) { /// Check if the rule for the direction is negated
+      std::vector<std::string> rule_vec = p_section[negation_value].get<std::vector<std::string>>();
+      add_rules(key, rule_vec);
+      p_tile.directions_to_invert.insert(key);
     }
-    else if (section.contains(value)) { /// Check if the rule for the direction exists
-      std::vector<std::string> rule_vec = section[value].get<std::vector<std::string>>();
-      std::unordered_set<std::string> rules(rule_vec.begin(), rule_vec.end());
-      tile.rules[key] = rules;
+    else if (p_section.contains(value)) { /// Check if the rule for the direction exists
+      std::vector<std::string> rule_vec = p_section[value].get<std::vector<std::string>>();
+      add_rules(key, rule_vec);
     }
     else { /// The rule for the direction is empty
-      tile.rules[key] = {};
+      p_tile.rules[key] = {};
     }
   }
 }

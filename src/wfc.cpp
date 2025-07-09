@@ -44,9 +44,13 @@ wfc::Canvas* wfc::init(const std::string& p_config_path) {
   );
   canvas->set_direction_type(canvas_info.direction_type);
 
+  wfc::Log::info("Parsing groups config at " + p_config_path + "...");
+  wfc::GroupInfo group_info;
+  parser.parse_groups(group_info);
+
   wfc::Log::info("Parsing tiles config at " + p_config_path + "...");
   std::vector<wfc::TileInfo> tiles;
-  parser.parse_tiles(tiles);
+  parser.parse_tiles(tiles, group_info);
 
   wfc::Log::info("Adding parsed tiles to canvas...");
   for (wfc::TileInfo tile: tiles) {

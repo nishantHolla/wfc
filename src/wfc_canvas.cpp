@@ -140,12 +140,11 @@ void wfc::Canvas::add_constraint(size_t x, size_t y, const std::string& p_tile) 
   constraints__.fixed[idx].insert(tiles__[p_tile]);
 }
 
-void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir,
-                           const std::initializer_list<const std::string> p_to) {
+void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir, const std::vector<std::string>& p_to) {
 
-  /// Call add_rule for each tile in the initializer_list
+  /// Call add_rule for each tile in the list
 
-  for (const auto& tile : p_to) {
+  for (const std::string& tile : p_to) {
     add_rule(p_for, p_dir, tile);
   }
 }

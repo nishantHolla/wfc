@@ -36,6 +36,10 @@ struct TileInfo {
   }
 };
 
+struct GroupInfo {
+  std::unordered_map<std::string, std::vector<std::string>> groups;
+};
+
 struct ConstraintInfo {
   struct Fixed {
     int row; int column;
@@ -82,9 +86,18 @@ public:
    * Parse "tile" section of the config file and store vlaues in the given reference to vector
    *
    * Params:
-   *       Vector<TileInfo> p_tiles: Store the tiles
+   *       Vector<TileInfo> p_tiles : Store the tiles
+   *       GroupInfo        p_groups: Parsed groups
    */
-  void parse_tiles(std::vector<TileInfo>& p_tiles) const;
+  void parse_tiles(std::vector<TileInfo>& p_tiles, const wfc::GroupInfo& p_groups) const;
+
+  /*
+   * Parse "groups" section of the ocnfig file and store values in the given reference to GroupInfo
+   *
+   * Params:
+   *       GroupInfo p_group: Store the groups
+   */
+  void parse_groups(wfc::GroupInfo& p_group) const;
 
   /*
    * Parse "constraints" section of the config file and stroe values in the given reference
@@ -150,10 +163,11 @@ private:
    * Parse the rules section of tiles and fill the rules property of the given tile
    *
    * Params:
-   *       TileInfo tile   : Reference to the tile for which to fill the rules for
-   *       json     section: Json section that contains the rules
+   *       TileInfo  p_tile      : Reference to the tile for which to fill the rules for
+   *       json      p_section   : Json section that contains the rules
+   *       GroupInfo p_group_info: Parsed groups
    */
-  void parse_tile_rules__(TileInfo& tile, const json& section) const;
+  void parse_tile_rules__(TileInfo& p_tile, const json& p_section, const wfc::GroupInfo& p_group_info) const;
 
   /*
    * Resolve the rules that need to be inverted
