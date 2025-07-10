@@ -1,0 +1,97 @@
+{
+  "QUAD_RD": {
+    "path": "quad-RD.png",
+    "rules": {
+      "!north": ["g_path_down", "g_quad_t"],
+      "east": ["QUAD_D", "QUAD_LD"],
+      "south_east": ["g_quad_br"],
+      "south": ["QUAD_R", "QUAD_RU"],
+      "!west": ["g_path_right", "g_quad_l"]
+    }
+  },
+
+  "QUAD_LD": {
+    "path": "quad-LD.png",
+    "rules": {
+      "!north": ["g_path_down", "g_quad_t"],
+      "!east": ["g_path_left", "g_quad_r"],
+      "south": ["QUAD_L", "QUAD_LU"],
+      "south_west": ["g_quad_bl"],
+      "west": ["QUAD_U", "QUAD_RD"]
+    }
+  },
+
+  "QUAD_LU": {
+    "path": "quad-LU.png",
+    "rules": {
+      "north": ["QUAD_L", "QUAD_LD"],
+      "!east": ["g_path_left", "g_quad_r"],
+      "!south": ["g_path_up", "g_quad_b"],
+      "west": ["QUAD_U", "QUAD_RU"],
+      "north_west": ["g_quad_tl"]
+    }
+  },
+
+  "QUAD_RU": {
+    "path": "quad-RU.png",
+    "rules": {
+      "north": ["QUAD_R", "QUAD_RD"],
+      "north_east": ["g_quad_tr"],
+      "east": ["QUAD_U", "QUAD_LU"],
+      "!south": ["g_path_up","g_quad_b"],
+      "!west": ["g_path_right", "g_quad_l"]
+    }
+  },
+
+  "QUAD_D": {
+    "path": "quad-D.png",
+    "rules": {
+      "!north": ["g_path_down", "g_quad_t"],
+      "east": ["QUAD_D", "QUAD_LD"],
+      "south_east": ["g_quad_br"],
+      "south": ["QUAD_C", "QUAD_U"],
+      "south_west": ["g_quad_bl"],
+      "west": ["QUAD_RD", "QUAD_D"]
+    }
+  },
+
+  "QUAD_L": {
+    "path": "quad-L.png",
+    "rules": {
+      "north": ["QUAD_LD", "QUAD_L"],
+      "!east": ["g_path_left", "g_quad_r"],
+      "south": ["QUAD_LU", "QUAD_L"],
+      "west": ["QUAD_C", "QUAD_R"]
+    }
+  },
+
+  "QUAD_U": {
+    "path": "quad-U.png",
+    "rules": {
+      "north": ["QUAD_C", "QUAD_D"],
+      "east": ["QUAD_LU", "QUAD_U"],
+      "!south": ["g_path_up", "g_quad_b"],
+      "west": ["QUAD_RU", "QUAD_U"]
+    }
+  },
+
+  "QUAD_R": {
+    "path": "quad-R.png",
+    "rules": {
+      "north": ["QUAD_RD", "QUAD_R"],
+      "east": ["QUAD_C", "QUAD_L"],
+      "south": ["QUAD_RU", "QUAD_R"],
+      "!west": ["g_path_right", "g_quad_l"]
+    }
+  },
+
+  "QUAD_C": {
+    "path": "quad-C.png",
+    "rules": {
+      "north": ["QUAD_C", "QUAD_U"],
+      "east": ["QUAD_C", "QUAD_L"],
+      "south": ["QUAD_C", "QUAD_U"],
+      "west": ["QUAD_C", "QUAD_R"]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "BLANK": {
+    "path": "blank.png",
+    "rules": {
+      "!north": ["g_path_down", "g_quad_t"],
+      "!east": ["g_path_left", "g_quad_r"],
+      "!south": ["g_path_up", "g_quad_b"],
+      "!west": ["g_path_right", "g_quad_l"]
+    }
+  }
+}
