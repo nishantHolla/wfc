@@ -1,6 +1,8 @@
 #include "wfc_tile.h"
 #include "wfc_log.h"
 
+#include <sstream>
+
 #include <SDL2/SDL_image.h>
 
 wfc::Tile::Tile(const std::string& p_path):
@@ -18,9 +20,9 @@ void wfc::Tile::load(SDL_Renderer* p_renderer) {
   wfc::Log::info("Loading texture at " + path__.string() + "...");
   SDL_Surface* surface = IMG_Load(path__.c_str());
   if (!surface) {
-    char msg[500];
-    sprintf(msg, "Failed to load texture at %s\n", path__.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Failed to load texture at ");
+    msg << path__;
+    throw std::runtime_error(msg.str());
   }
 
   /// Create texture from loaded surface
@@ -29,9 +31,9 @@ void wfc::Tile::load(SDL_Renderer* p_renderer) {
   SDL_FreeSurface(surface);
 
   if (!texture__) {
-    char msg[500];
-    sprintf(msg, "Failed to convert surface to texture for %s\n", path__.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Failed to convert surface to texture for ");
+    msg << path__;
+    throw std::runtime_error(msg.str());
   }
 }
 

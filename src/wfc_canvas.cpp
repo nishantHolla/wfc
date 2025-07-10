@@ -2,6 +2,7 @@
 #include "wfc_utils.h"
 #include "wfc_random.h"
 
+#include <sstream>
 #include <stdexcept>
 #include <filesystem>
 #include <vector>
@@ -68,9 +69,9 @@ void wfc::Canvas::add_tile(const std::string& p_name, const std::string& p_path)
   /// Check if tile is already known to the canvas
 
   if (tiles__.find(p_name) != tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s already exists", p_name.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Tile with name ");
+    msg << p_name << " already exists";
+    throw std::runtime_error(msg.str());
   }
 
   /// Add tile to the canvas
@@ -84,16 +85,17 @@ void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir, cons
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_for) == tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s does not exist", p_for.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Tile with name ");
+    msg << p_for << " does not exist";
+    throw std::runtime_error(msg.str());
   }
 
   /// Check if the destination tile is not known to the canvas
 
   if (tiles__.find(p_to) == tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s does not exist", p_to.c_str());
+    std::stringstream msg("Tile with name ");
+    msg << p_to << " does not exists";
+    throw std::runtime_error(msg.str());
   }
 
   /// Add rule to the tile
@@ -106,9 +108,9 @@ void wfc::Canvas::add_constraint(wfc::Constraints p_cons, const std::string& p_t
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_tile) == tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s does not exist", p_tile.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Tile with name ");
+    msg << p_tile << " does not exist";
+    throw std::runtime_error(msg.str());
   }
 
   /// Add the constraint to the canvas
@@ -121,18 +123,18 @@ void wfc::Canvas::add_constraint(size_t x, size_t y, const std::string& p_tile) 
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_tile) == tiles__.end()) {
-    char msg[100];
-    sprintf(msg, "Tile with name %s does not exist", p_tile.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Tile with name ");
+    msg << p_tile << " does not exist";
+    throw std::runtime_error(msg.str());
   }
 
   /// Check if the coordinate are out of bound
 
   size_t idx = y * columns__ + x;
   if (idx >= buffer__.size()) {
-    char msg[100];
-    sprintf(msg, "Coordninate %zu, %zu is out of bound", x, y);
-    throw std::runtime_error(msg);
+    std::stringstream msg("Coordinates ");
+    msg << x << ", " << y << " is out of bound";
+    throw std::runtime_error(msg.str());
   }
 
   /// Add the constraint to the canvas

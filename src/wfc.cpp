@@ -3,6 +3,8 @@
 #include "wfc_parser.h"
 #include "wfc_log.h"
 
+#include <sstream>
+
 namespace fs = std::filesystem;
 
 void wfc::check_config_file(const fs::path& p_config_path) {
@@ -10,9 +12,9 @@ void wfc::check_config_file(const fs::path& p_config_path) {
   /// Check if the path exists
 
   if (!fs::exists(p_config_path)) {
-    char msg[500];
-    sprintf(msg, "Could not open config file at path %s (current directory: %s)", p_config_path.c_str(), fs::current_path().c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Could not open config file at path ");
+    msg << p_config_path << " (current directory: " << fs::current_path() << ")";
+    throw std::runtime_error(msg.str());
   }
 
   /// Check if the path is a json file
@@ -20,9 +22,9 @@ void wfc::check_config_file(const fs::path& p_config_path) {
   if (!(fs::is_regular_file(p_config_path) &&
            p_config_path.has_extension() &&
            p_config_path.extension() == ".json")) {
-    char msg[100];
-    sprintf(msg, "Config file at %s is not a json file", p_config_path.c_str());
-    throw std::runtime_error(msg);
+    std::stringstream msg("Config file at ");
+    msg << p_config_path << " is not a json file";
+    throw std::runtime_error(msg.str());
   }
 }
 
