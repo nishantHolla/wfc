@@ -7,11 +7,14 @@
 #include <string>
 #include <filesystem>
 
-#define USAGE "Usage: ./wfc [-s seed] [-t delay_time_in_ms] </path/to/config.json>"
+#define USAGE "Usage: ./wfc [-s seed] [-t delay_time_in_ms] [-o /path/to/output_image.png] </path/to/config.json>"
+
+namespace fs = std::filesystem;
 
 const uint32_t TARGET_FPS = 60;                  /// FPS to run the SDL window in
 const uint32_t FRAME_DELAY = 1000 / TARGET_FPS;  /// Frame Delay in ms for the set FSP
 uint32_t COLLAPSE_INTERVAL = 10;                 /// Time between each collapse in ms
+std::string OUTPUT_IMAGE_PATH = "";              /// Path to store the file image
 int32_t SEED = -1;                               /// Seed to use for random number generation, random seed if -1
 
 int main(int argc, char* argv[]) {
@@ -27,7 +30,7 @@ int main(int argc, char* argv[]) {
   /// Parse flags
 
   int opt;
-  while ((opt = getopt(argc, argv, "s:t:")) != -1) {
+  while ((opt = getopt(argc, argv, "s:t:o:")) != -1) {
     switch (opt) {
       case 's':
         SEED = std::atoi(optarg);
@@ -35,6 +38,10 @@ int main(int argc, char* argv[]) {
 
       case 't':
         COLLAPSE_INTERVAL = std::atoi(optarg);
+        break;
+
+      case 'o':
+        OUTPUT_IMAGE_PATH = optarg;
         break;
 
       default:
@@ -45,10 +52,37 @@ int main(int argc, char* argv[]) {
 
   /// Parse arguments
 
-  wfc::check_config_file(argv[optind]);
-  std::filesystem::path config_path(argv[optind]);
-  std::filesystem::current_path(config_path.parent_path());
-  std::filesystem::path config_file = config_path.filename();
+  if (OUTPUT_IMAGE_PATH != "" && !fs::exists(fs::absolute(OUTPUT_IMAGE_PATH).parent_path())) {
+    std::stringstream msg("Path to image does not exist");
+    wfc::Log::error(msg.str());
+    exit(1);
+  }
+
+  OUTPUT_IMAGE_PATH = fs::absolute(OUTPUT_IMAGE_PATH);
+
+  if (OUTPUT_IMAGE_PATH != "" && fs::exists(OUTPUT_IMAGE_PATH)) {
+    std::stringstream msg("Image file ");
+    msg << OUTPUT_IMAGE_PATH << " already exists";
+    wfc::Log::error(msg.str());
+    exit(1);
+  }
+
+  if (OUTPUT_IMAGE_PATH != "" && fs::path(OUTPUT_IMAGE_PATH).extension() != ".png") {
+    wfc::Log::error("Output file must be a png");
+    exit(1);
+  }
+
+  try {
+    wfc::check_config_file(argv[optind]);
+  }
+  catch (const std::runtime_error& err) {
+    wfc::Log::error(err.what());
+    exit(1);
+  }
+
+  fs::path config_path(argv[optind]);
+  fs::current_path(config_path.parent_path());
+  fs::path config_file = config_path.filename();
 
   /// Set seed for random number generator
 
@@ -58,7 +92,14 @@ int main(int argc, char* argv[]) {
 
   /// Initialize SDL and create canvas
 
-  wfc::Canvas* canvas = wfc::init(config_file);
+  wfc::Canvas* canvas;
+  try {
+    canvas = wfc::init(config_file);
+  }
+  catch (const std::runtime_error& err) {
+    wfc::Log::error(err.what());
+    exit(1);
+  }
 
   /// Start app loop
 
@@ -92,6 +133,10 @@ int main(int argc, char* argv[]) {
     if (frame_time < FRAME_DELAY) {
       SDL_Delay(FRAME_DELAY - frame_time);
     }
+  }
+
+  if (OUTPUT_IMAGE_PATH != "") {
+    canvas->save_image(OUTPUT_IMAGE_PATH);
   }
 
   wfc::Log::info("Shutting down app...");

@@ -136,6 +136,18 @@ public:
    */
   void render();
 
+  /*
+   * Save the current state of buffer__ to given image path
+   *
+   * Params:
+   *       String p_output: Path to output image
+   *
+   * Throws:
+   *       If surface creation fails
+   *       If image saving fails
+   */
+  void save_image(const std::string& p_output);
+
 private:
   struct Constraints {
     std::unordered_map<wfc::Constraints, std::unordered_set<wfc::Tile*>> others;

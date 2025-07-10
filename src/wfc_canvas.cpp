@@ -1,6 +1,7 @@
 #include "wfc_canvas.h"
 #include "wfc_utils.h"
 #include "wfc_random.h"
+#include "wfc_log.h"
 
 #include <sstream>
 #include <stdexcept>
@@ -8,6 +9,8 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+
+#include <SDL2/SDL_image.h>
 
 namespace fs = std::filesystem;
 
@@ -236,6 +239,36 @@ void wfc::Canvas::render() {
   /// Present the window
 
   SDL_RenderPresent(renderer__);
+}
+
+void wfc::Canvas::save_image(const std::string& p_output) {
+  wfc::Log::info("Saving output image...");
+
+  int width, height;
+  SDL_GetRendererOutputSize(renderer__, &width, &height);
+
+  // Create surface to store pixels
+  SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+  if (!surface) {
+    std::stringstream msg("Failed to create output surface");
+    throw std::runtime_error(msg.str());
+  }
+
+  // Read pixels from renderer to surface
+  if (SDL_RenderReadPixels(renderer__, nullptr, SDL_PIXELFORMAT_RGBA32, surface->pixels, surface->pitch) != 0) {
+    std::stringstream msg("Failed to read pixels");
+    SDL_FreeSurface(surface);
+    throw std::runtime_error(msg.str());
+  }
+
+  // Save surface to PNG (can also use BMP, JPG, etc.)
+  if (IMG_SavePNG(surface, p_output.c_str()) != 0) {
+    std::stringstream msg("Failed to save output image");
+    SDL_FreeSurface(surface);
+    throw std::runtime_error(msg.str());
+  }
+
+  SDL_FreeSurface(surface);
 }
 
 void wfc::Canvas::create_null_texture__() {
