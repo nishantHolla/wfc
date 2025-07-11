@@ -12,8 +12,8 @@ void wfc::check_config_file(const fs::path& p_config_path) {
   /// Check if the path exists
 
   if (!fs::exists(p_config_path)) {
-    std::stringstream msg("Could not open config file at path ");
-    msg << p_config_path << " (current directory: " << fs::current_path() << ")";
+    std::stringstream msg;
+    msg << "Could not open config file at path " << p_config_path << " (current directory: " << fs::current_path() << ")";
     throw std::runtime_error(msg.str());
   }
 
@@ -22,8 +22,8 @@ void wfc::check_config_file(const fs::path& p_config_path) {
   if (!(fs::is_regular_file(p_config_path) &&
            p_config_path.has_extension() &&
            p_config_path.extension() == ".json")) {
-    std::stringstream msg("Config file at ");
-    msg << p_config_path << " is not a json file";
+    std::stringstream msg;
+    msg << "Config file at " << p_config_path << " is not a json file";
     throw std::runtime_error(msg.str());
   }
 }

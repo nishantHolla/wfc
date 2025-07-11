@@ -72,8 +72,8 @@ void wfc::Canvas::add_tile(const std::string& p_name, const std::string& p_path)
   /// Check if tile is already known to the canvas
 
   if (tiles__.find(p_name) != tiles__.end()) {
-    std::stringstream msg("Tile with name ");
-    msg << p_name << " already exists";
+    std::stringstream msg;
+    msg << "Tile with name " << p_name << " already exists";
     throw std::runtime_error(msg.str());
   }
 
@@ -88,16 +88,16 @@ void wfc::Canvas::add_rule(const std::string& p_for, wfc::Directions p_dir, cons
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_for) == tiles__.end()) {
-    std::stringstream msg("Tile with name ");
-    msg << p_for << " does not exist";
+    std::stringstream msg;
+    msg << "Tile with name " << p_for << " does not exist";
     throw std::runtime_error(msg.str());
   }
 
   /// Check if the destination tile is not known to the canvas
 
   if (tiles__.find(p_to) == tiles__.end()) {
-    std::stringstream msg("Tile with name ");
-    msg << p_to << " does not exists";
+    std::stringstream msg;
+    msg << "Tile with name " << p_to << " does not exists";
     throw std::runtime_error(msg.str());
   }
 
@@ -111,8 +111,8 @@ void wfc::Canvas::add_constraint(wfc::Constraints p_cons, const std::string& p_t
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_tile) == tiles__.end()) {
-    std::stringstream msg("Tile with name ");
-    msg << p_tile << " does not exist";
+    std::stringstream msg;
+    msg << "Tile with name " << p_tile << " does not exist";
     throw std::runtime_error(msg.str());
   }
 
@@ -126,8 +126,8 @@ void wfc::Canvas::add_constraint(size_t x, size_t y, const std::string& p_tile) 
   /// Check if the source tile is not known to the canvas
 
   if (tiles__.find(p_tile) == tiles__.end()) {
-    std::stringstream msg("Tile with name ");
-    msg << p_tile << " does not exist";
+    std::stringstream msg;
+    msg << "Tile with name " << p_tile << " does not exist";
     throw std::runtime_error(msg.str());
   }
 
@@ -135,8 +135,8 @@ void wfc::Canvas::add_constraint(size_t x, size_t y, const std::string& p_tile) 
 
   size_t idx = y * columns__ + x;
   if (idx >= buffer__.size()) {
-    std::stringstream msg("Coordinates ");
-    msg << x << ", " << y << " is out of bound";
+    std::stringstream msg;
+    msg << "Coordinates" << x << ", " << y << " is out of bound";
     throw std::runtime_error(msg.str());
   }
 
@@ -250,20 +250,23 @@ void wfc::Canvas::save_image(const std::string& p_output) {
   // Create surface to store pixels
   SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
   if (!surface) {
-    std::stringstream msg("Failed to create output surface");
+    std::stringstream msg;
+    msg << "Failed to create output surface";
     throw std::runtime_error(msg.str());
   }
 
   // Read pixels from renderer to surface
   if (SDL_RenderReadPixels(renderer__, nullptr, SDL_PIXELFORMAT_RGBA32, surface->pixels, surface->pitch) != 0) {
-    std::stringstream msg("Failed to read pixels");
+    std::stringstream msg;
+    msg << "Failed to read pixels from surface";
     SDL_FreeSurface(surface);
     throw std::runtime_error(msg.str());
   }
 
   // Save surface to PNG (can also use BMP, JPG, etc.)
   if (IMG_SavePNG(surface, p_output.c_str()) != 0) {
-    std::stringstream msg("Failed to save output image");
+    std::stringstream msg;
+    msg << "Failed to save output image";
     SDL_FreeSurface(surface);
     throw std::runtime_error(msg.str());
   }

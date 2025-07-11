@@ -53,7 +53,8 @@ int main(int argc, char* argv[]) {
   /// Parse arguments
 
   if (OUTPUT_IMAGE_PATH != "" && !fs::exists(fs::absolute(OUTPUT_IMAGE_PATH).parent_path())) {
-    std::stringstream msg("Path to image does not exist");
+    std::stringstream msg;
+    msg << "Path to image does not exist";
     wfc::Log::error(msg.str());
     exit(1);
   }
@@ -61,8 +62,8 @@ int main(int argc, char* argv[]) {
   OUTPUT_IMAGE_PATH = fs::absolute(OUTPUT_IMAGE_PATH);
 
   if (OUTPUT_IMAGE_PATH != "" && fs::exists(OUTPUT_IMAGE_PATH)) {
-    std::stringstream msg("Image file ");
-    msg << OUTPUT_IMAGE_PATH << " already exists";
+    std::stringstream msg;
+    msg << "Image file " << OUTPUT_IMAGE_PATH << " already exists";
     wfc::Log::error(msg.str());
     exit(1);
   }
