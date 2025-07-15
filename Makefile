@@ -19,7 +19,7 @@ ARGS=
 NAME=
 
 pre:
-	rm -r ./out
+	rm -rf ./out
 	mkdir -p ./out
 	cd out && ln -s ../examples . && cd ..
 
