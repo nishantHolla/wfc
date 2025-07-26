@@ -1,0 +1,38 @@
+{
+
+  "canvas": {
+    "width": 800,
+    "height": 800,
+    "rows": 20,
+    "columns": 20,
+    "directions": "quad"
+  },
+
+  "tiles": [
+    "./sub-section1.json",
+    "./sub-section2.json"
+  ],
+
+  "groups": {
+    "group1": ["RIGHT", "LEFT"],
+    "group2": ["LEFT", "UP"]
+  },
+
+  "constraints": {
+    "top_right": ["RIGHT", "LEFT"],
+    "bottom_right": ["LEFT", "UP"],
+    "bottom_left": ["UP", "DOWN"],
+    "top_left": ["DOWN", "RIGHT"],
+    "top": ["DOWN"],
+    "right": ["UP"],
+    "left": ["LEFT"],
+    "bottom": ["DOWN"],
+    "edges": ["RIGHT"],
+    "corners": ["DOWN"],
+    "fixed": [
+      { "row": 20, "column": 30, "tiles": ["RIGHT", "LEFT"]},
+      { "row": 10, "column": 50, "tiles": ["UP"]},
+      { "row": 8, "column": 100, "tiles": ["DOWN"]}
+    ]
+  }
+}

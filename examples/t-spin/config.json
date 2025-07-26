@@ -1,0 +1,76 @@
+{
+
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "rows": 8,
+    "columns": 8,
+    "directions": "quad"
+  },
+
+  "tiles": {
+    "LEFT": {
+      "path": "tiles/left.png",
+      "rules": {
+        "north": ["RIGHT", "LEFT", "DOWN"],
+        "east": ["RIGHT", "BLANK"],
+        "south": ["RIGHT", "LEFT", "UP"],
+        "west": ["RIGHT", "DOWN", "UP"]
+      }
+    },
+
+    "RIGHT": {
+      "path": "tiles/right.png",
+      "rules": {
+        "north": ["RIGHT", "LEFT", "DOWN"],
+        "east": ["LEFT", "DOWN", "UP"],
+        "south": ["RIGHT", "LEFT", "UP"],
+        "west": ["LEFT", "BLANK"]
+      }
+    },
+
+    "UP": {
+      "path": "tiles/up.png",
+      "rules": {
+        "north": ["DOWN", "LEFT", "RIGHT"],
+        "east": ["LEFT", "DOWN", "UP"],
+        "south": ["BLANK", "DOWN"],
+        "west": ["RIGHT", "DOWN", "UP"]
+      }
+    },
+
+    "DOWN": {
+      "path": "tiles/down.png",
+      "rules": {
+        "north": ["BLANK", "UP"],
+        "east": ["LEFT", "DOWN", "UP"],
+        "south": ["UP", "LEFT", "RIGHT"],
+        "west": ["RIGHT", "DOWN", "UP"]
+      }
+    },
+
+    "BLANK": {
+      "path": "tiles/blank.png",
+      "rules": {
+        "north": ["BLANK", "UP"],
+        "east": ["BLANK", "RIGHT"],
+        "south": ["BLANK", "DOWN"],
+        "west": ["BLANK", "LEFT"]
+      }
+    }
+  },
+
+  "constraints": {
+    "top": ["DOWN"],
+    "right": ["LEFT"],
+    "bottom": ["UP"],
+    "left": ["RIGHT"],
+    "top_right": ["DOWN", "LEFT"],
+    "bottom_right": ["UP", "LEFT"],
+    "bottom_left": ["UP", "RIGHT"],
+    "top_left": ["DOWN", "RIGHT"],
+    "fixed": [
+      { "row": 1, "column": 1, "tiles": ["UP"]}
+    ]
+  }
+}

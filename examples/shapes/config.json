@@ -1,0 +1,31 @@
+{
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "rows": 8,
+    "columns": 8,
+    "directions": "oct"
+  },
+
+  "tiles": [
+    "path/path_config.json",
+    "blank/blank_config.json",
+    "quad/quad_config.json"
+  ],
+
+  "groups": {
+    "g_path_down": ["PATH_D", "PATH_LD", "PATH_RD", "PATH_V"],
+    "g_path_right": ["PATH_R", "PATH_RD", "PATH_RU", "PATH_H"],
+    "g_path_left": ["PATH_L", "PATH_LD", "PATH_LU", "PATH_H"],
+    "g_path_up": ["PATH_U", "PATH_LU", "PATH_RU", "PATH_V"],
+
+    "g_quad_tl": ["QUAD_RD", "QUAD_D", "QUAD_C", "QUAD_R"],
+    "g_quad_tr": ["QUAD_D", "QUAD_LD", "QUAD_L", "QUAD_C"],
+    "g_quad_bl": ["QUAD_R", "QUAD_C", "QUAD_U", "QUAD_RU"],
+    "g_quad_br": ["QUAD_C", "QUAD_L", "QUAD_U", "QUAD_LU"],
+    "g_quad_t": ["QUAD_RD", "QUAD_D", "QUAD_LD", "QUAD_L", "QUAD_C", "QUAD_R"],
+    "g_quad_b": ["QUAD_R", "QUAD_C", "QUAD_L", "QUAD_LU", "QUAD_U", "QUAD_RU"],
+    "g_quad_l": ["QUAD_RD", "QUAD_D", "QUAD_C", "QUAD_U", "QUAD_RU", "QUAD_R"],
+    "g_quad_r": ["QUAD_D", "QUAD_LD", "QUAD_L", "QUAD_LU", "QUAD_U", "QUAD_C"]
+  }
+}
