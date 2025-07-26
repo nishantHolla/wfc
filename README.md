@@ -76,7 +76,7 @@ cd out
   }
 }
 ```
-  - Here two tiles with names `LEFT` and `RIGHT` are defined.
+  - Here, two tiles with names `LEFT` and `RIGHT` are defined.
   - Each tile needs a path to its image which is relative to the config file.
   - Each tile also needs a list of rules for the directions around the tile
   - For `"quad"` directions use the labels `"north"`, `"east"`, `"south"`, `"west"` to define the directions
@@ -99,3 +99,16 @@ Once you are happy with the generated image, close the window to save the image.
 ```bash
 ./wfc -s 42 -o my_tile_image.png ./config.json
 ```
+- You can also group tiles together into a group name and use that to refer to all the tiles in that
+group
+```json
+{
+  "groups": {
+    "g_path_down": ["PATH_D", "PATH_LD", "PATH_RD", "PATH_V"],
+    "g_path_right": ["PATH_R", "PATH_RD", "PATH_RU", "PATH_H"]
+   }
+}
+```
+- Here, two groups are defined with the names `"g_path_down"` and `"g_path_right"` each with four tiles.
+- The group name can be used in tile rules to refer to these four tiles togeter. So a rule like<br />
+`"north": ["PATH_D", "PATH_LD", "PATH_RD", "PATH_V"]` can simply be written as `"north": ["g_path_down"]`
