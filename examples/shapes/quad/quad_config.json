@@ -17,7 +17,7 @@
       "!east": ["g_path_left", "g_quad_r"],
       "south": ["QUAD_L", "QUAD_LU"],
       "south_west": ["g_quad_bl"],
-      "west": ["QUAD_U", "QUAD_RD"]
+      "west": ["QUAD_D", "QUAD_RD"]
     }
   },
 
