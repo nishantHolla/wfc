@@ -73,6 +73,7 @@ cd out
         "west": ["LEFT", "BLANK"]
       }
     }
+  }
 }
 ```
   - Here two tiles with names `LEFT` and `RIGHT` are defined.
